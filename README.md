@@ -1,6 +1,5 @@
 # Pong Clock
-
-<img width="128" height="128" alt="store" src="https://github.com/rMarduk87/MementoBibere/assets/30796324/79fa6d8a-3913-41ed-8486-b0c3166ed6b5">
+![ic_launcher](https://github.com/user-attachments/assets/fae352ce-4546-427a-bc2a-587e5a1c2993)
 
 
 Let's Hydrate is an android app to remind you to drink water and track your water intake habit
