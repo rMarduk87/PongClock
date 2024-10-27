@@ -2,7 +2,7 @@
 ![ic_launcher](https://github.com/user-attachments/assets/fae352ce-4546-427a-bc2a-587e5a1c2993)
 
 
-Let's Hydrate is an android app to remind you to drink water and track your water intake habit
+Pong Clock is a clock app that shows a Pong game between CPU players in the background
 
 ## ScreenShots
 ![screenshot 1](https://github.com/user-attachments/assets/2442730b-b4fe-4fcb-bfe1-2640af6419c5)
