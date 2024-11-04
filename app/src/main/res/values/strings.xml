@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Pong Clock</string>
+    <string name="settings_t">Settings</string>
+    <string name="matrix">Matrix Mode</string>
+    <string name="season">Season Mode</string>
+    <string name="settings_info">Long-click anywhere on the screen to open the settings menu</string>
+    <string name="settings">settings</string>
 </resources>

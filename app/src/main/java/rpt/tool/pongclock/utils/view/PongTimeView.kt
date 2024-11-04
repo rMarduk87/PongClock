@@ -11,7 +11,12 @@ import android.graphics.Typeface
 import android.util.AttributeSet
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import rpt.tool.pongclock.R
+import rpt.tool.pongclock.utils.AppUtils
+import rpt.tool.pongclock.utils.extensions.toColor
 import rpt.tool.pongclock.utils.log.i
+import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
+import java.util.Calendar
 import java.util.Date
 import kotlin.math.abs
 import kotlin.math.cos
@@ -185,19 +190,19 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
         )
 
         init {
-            linePaint.color = Color.WHITE
+            linePaint.color = getColor()
             linePaint.style = Paint.Style.STROKE
             linePaint.strokeWidth = Companion.LINE_WIDTH.toFloat()
             linePaint.strokeCap = Cap.SQUARE
 
             panelPaint = Paint()
-            panelPaint.color = Color.WHITE
+            panelPaint.color = getColor()
             panelPaint.style = Paint.Style.STROKE
             panelPaint.strokeWidth = Companion.PANEL_LINE_WIDTH.toFloat()
             panelPaint.strokeCap = Cap.SQUARE
 
             dashedLinePaint = Paint()
-            dashedLinePaint.color = Color.WHITE
+            dashedLinePaint.color = getColor()
             dashedLinePaint.style = Paint.Style.STROKE
             dashedLinePaint.strokeWidth = Companion.LINE_WIDTH.toFloat()
             val pe: PathEffect = DashPathEffect(floatArrayOf(20f, 16f), 0.0f)
@@ -290,13 +295,16 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
         }
 
         private fun doDraw(canvas: Canvas?) {
-            canvas!!.drawColor(Color.BLACK)
-            if (showFPS) {
-                canvas.drawText("FPS:$currentFPS", 10f, 25f, textPaint)
+            if(canvas != null){
+                canvas!!.drawColor(Color.BLACK)
+                if (showFPS) {
+                    canvas.drawText("FPS:$currentFPS", 10f, 25f, textPaint)
+                }
+                drawBall(canvas)
+                drawFieldAndPanels(canvas)
+                drawTime(canvas, currentHours, currentMinutes)
             }
-            drawBall(canvas)
-            drawFieldAndPanels(canvas)
-            drawTime(canvas, currentHours, currentMinutes)
+
         }
 
         private fun drawBall(canvas: Canvas?) {
@@ -544,6 +552,20 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
 
     } // PongThread
 
+    private fun getColor(): Int {
+        var color = Color.WHITE
+        if(SharedPreferencesManager.mode == 1 && SharedPreferencesManager.season == 0){
+            color = context.getColor(R.color.matrix)
+        }
+        else if((SharedPreferencesManager.mode == 1 || SharedPreferencesManager.mode ==0)
+            && SharedPreferencesManager.season == 1){
+            val calendar = Calendar.getInstance()
+            val currentDayOfYear = calendar[Calendar.DAY_OF_YEAR]
+            color = context.getColor(AppUtils.getSeason(currentDayOfYear).toColor())
+        }
+        return color
+    }
+
 
     init {
         // register our interest in hearing about changes to our surface
@@ -612,3 +634,5 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
         private const val SP = LW + 15 // letter width + space
     }
 }
+
+
