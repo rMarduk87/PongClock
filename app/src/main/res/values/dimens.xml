@@ -1,0 +1,9 @@
+<resources>
+    <dimen name="editBalloonOverlayPadding">6dp</dimen>
+    <dimen name="editBalloonOverlayRadius">11dp</dimen>
+    <dimen name="fab_margin">20dp</dimen>
+    <dimen name="alert_width">290dp</dimen>
+    <dimen name="common_circle_width">3dp</dimen>
+    <dimen name="progress_circle_radius">34dp</dimen>
+    <dimen name="recycler_view_item_icon_sizexxl">128dp</dimen>
+</resources>
