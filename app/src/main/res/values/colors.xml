@@ -7,4 +7,12 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="matrix">#00FF41</color>
+    <color name="app_transparant">#0000</color>
+    <color name="spring">#fdd8e5</color>
+    <color name="summer">#eae374</color>
+    <color name="fall">#f05133</color>
+    <color name="winter">#d6fffb</color>
+    <color name="colorSkyBlue">#03BBFF</color>
+    <color name="overlay">#BF000000</color>
 </resources>

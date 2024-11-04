@@ -10,6 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.fragment.app.FragmentTransaction
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
@@ -59,7 +60,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
     }
-
 
     private fun initInAppUpdate() {
         appUpdateManager = AppUpdateManagerFactory.create(baseContext)

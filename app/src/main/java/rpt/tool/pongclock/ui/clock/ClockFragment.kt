@@ -1,28 +1,16 @@
 package rpt.tool.pongclock.ui.clock
 
-import android.R
-import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
-import android.view.Window
-import android.view.WindowManager
 import rpt.tool.pongclock.BaseFragment
 import rpt.tool.pongclock.databinding.ClockFragmentBinding
-import rpt.tool.pongclock.utils.view.PongTimeView
+import rpt.tool.pongclock.utils.navigation.safeNavController
+import rpt.tool.pongclock.utils.navigation.safeNavigate
 import rpt.tool.pongclock.utils.view.PongTimeView.PongThread
 
 
+@Suppress("DEPRECATION")
 class ClockFragment : BaseFragment<ClockFragmentBinding>(ClockFragmentBinding::inflate) {
-
-    val MENU_TOGGLEFPS: Int = 1
-    val MENU_ABOUT: Int = 2
-    val DIALOG_ABOUT: Int = 3
 
     private var pongThread: PongThread? = null
 
@@ -33,7 +21,14 @@ class ClockFragment : BaseFragment<ClockFragmentBinding>(ClockFragmentBinding::i
 
         pongThread = binding.pongview.thread
 
+        binding.settings.setOnClickListener {
+            goToSettingsFragment()
+        }
 
-        // turn off the window's title bar and switch to fullscreen
+    }
+
+    private fun goToSettingsFragment() {
+        safeNavController?.safeNavigate(ClockFragmentDirections.
+        actionClockFragmentToSettingsFragment())
     }
 }
