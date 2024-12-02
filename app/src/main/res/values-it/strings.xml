@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Pong Clock</string>
+    <string name="settings_t">Impostazioni</string>
+    <string name="matrix">Modalità matrix</string>
+    <string name="season">Modalità stagione</string>
+    <string name="settings">impostazioni</string>
+</resources>
