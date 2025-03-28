@@ -14,7 +14,7 @@ android {
         applicationId "rpt.tool.pongclock"
         minSdk 27
         targetSdk 34
-        versionCode 4
+        versionCode 5
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -75,7 +75,7 @@ dependencies {
     implementation libs.screen.easy
     implementation libs.androidx.activity
     //Balloon
-    implementation("com.github.skydoves:balloon:1.6.3")
+    implementation(libs.balloon)
     //Test
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit

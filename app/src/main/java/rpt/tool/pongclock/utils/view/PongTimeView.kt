@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package rpt.tool.pongclock.utils.view
 
 import android.content.Context
@@ -15,12 +17,14 @@ import rpt.tool.pongclock.R
 import rpt.tool.pongclock.utils.AppUtils
 import rpt.tool.pongclock.utils.extensions.toColor
 import rpt.tool.pongclock.utils.log.i
+import rpt.tool.pongclock.utils.log.e
 import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
 import java.util.Calendar
 import java.util.Date
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
+import androidx.core.graphics.withSave
 
 
 class PongTimeView(context: Context?, attrs: AttributeSet?) :
@@ -296,7 +300,7 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
 
         private fun doDraw(canvas: Canvas?) {
             if(canvas != null){
-                canvas!!.drawColor(Color.BLACK)
+                canvas.drawColor(Color.BLACK)
                 if (showFPS) {
                     canvas.drawText("FPS:$currentFPS", 10f, 25f, textPaint)
                 }
@@ -312,17 +316,17 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
         }
 
         private fun drawTime(canvas: Canvas?, hours: Int, minutes: Int) {
-            drawNumber(canvas, number1X, Companion.NUMBER_Y, hours / 10)
-            drawNumber(canvas, number2X, Companion.NUMBER_Y, hours % 10)
-            drawNumber(canvas, number3X, Companion.NUMBER_Y, minutes / 10)
-            drawNumber(canvas, number4X, Companion.NUMBER_Y, minutes % 10)
+            drawNumber(canvas, number1X, hours / 10)
+            drawNumber(canvas, number2X, hours % 10)
+            drawNumber(canvas, number3X, minutes / 10)
+            drawNumber(canvas, number4X,  minutes % 10)
         }
 
-        private fun drawNumber(canvas: Canvas?, x: Int, y: Int, n: Int) {
-            canvas!!.save()
-            canvas.translate(x.toFloat(), y.toFloat())
-            canvas.drawLines(numbers[n], linePaint)
-            canvas.restore()
+        private fun drawNumber(canvas: Canvas?, x: Int, n: Int) {
+            canvas!!.withSave() {
+                canvas.translate(x.toFloat(), Companion.NUMBER_Y.toFloat())
+                canvas.drawLines(numbers[n], linePaint)
+            }
         }
 
         private fun drawFieldAndPanels(c: Canvas?) {
@@ -411,7 +415,9 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                 ball!!.direction =
                     (-ball!!.direction + Math.PI + Math.random() * 0.6 - 0.3).toFloat()
                 ball!!.direction =
-                    if ((ball!!.direction > Companion.TWOPI)) ball!!.direction - Companion.TWOPI else if ((ball!!.direction < 0)) ball!!.direction + Companion.TWOPI else ball!!.direction
+                    if ((ball!!.direction > Companion.TWOPI)) ball!!.direction - Companion.TWOPI
+                    else if ((ball!!.direction < 0)) ball!!.direction +
+                            Companion.TWOPI else ball!!.direction
                 if (ball!!.direction < Companion.MIN_RANGLE) {
                     ball!!.direction = Companion.MIN_RANGLE
                 } else if (ball!!.direction > Companion.MAX_RANGLE) {
@@ -453,7 +459,7 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
 
         private fun updateTime(now: Long) {
             var now = now
-            now = System.currentTimeMillis()
+            now= System.currentTimeMillis()
             if (now > nextTimeUpdate) {
                 nextTimeUpdate += 1000
                 currentDate.time = now
@@ -601,6 +607,7 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                 thread.join()
                 retry = false
             } catch (e: InterruptedException) {
+                e.message?.let { e(Throwable(e), it) }
             }
         }
     }
