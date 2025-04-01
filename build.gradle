@@ -12,7 +12,7 @@ buildscript {
 
     dependencies {
         classpath libs.gradle
-        classpath libs.kotlin.gradle.plugin
+        classpath libs.kotlin.gradle.plugin.v200
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
     }
 }
