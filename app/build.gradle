@@ -8,13 +8,13 @@ plugins {
 
 android {
     namespace 'rpt.tool.pongclock'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         applicationId "rpt.tool.pongclock"
         minSdk 27
-        targetSdk 34
-        versionCode 5
+        targetSdk 36
+        versionCode 6
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
