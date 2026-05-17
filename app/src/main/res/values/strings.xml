@@ -4,4 +4,8 @@
     <string name="matrix">Matrix Mode</string>
     <string name="season">Season Mode</string>
     <string name="settings">settings</string>
+    <string name="breakout_mode">Breakout Mode</string>
+    <string name="classic_mode">Classic Mode</string>
+    <string name="futuristic_mode">Futuristic Mode</string>
+    <string name="score">SCORE:</string>
 </resources>
