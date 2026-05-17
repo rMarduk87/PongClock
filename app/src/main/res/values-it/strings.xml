@@ -4,4 +4,8 @@
     <string name="matrix">Modalità matrix</string>
     <string name="season">Modalità stagione</string>
     <string name="settings">impostazioni</string>
+    <string name="breakout_mode">Modalità Breakout</string>
+    <string name="classic_mode">Modalità Classica</string>
+    <string name="futuristic_mode">Modalità Futuristica</string>
+    <string name="score">PUNTEGGIO:</string>
 </resources>

@@ -1,8 +1,5 @@
 package rpt.tool.pongclock.utils
 
-import java.util.Calendar
-import java.util.Date
-
 
 class AppUtils {
     companion object {
@@ -11,6 +8,9 @@ class AppUtils {
         const val FIRST_RUN_KEY : String = "firstrun"
         const val MATRIX_MODE : String = "matrix_mode"
         const val SEASON_MODE : String = "season_mode"
+        const val BREAKOUT_MODE : String = "breakout_mode"
+        const val CLASSIC_MODE : String = "classic_mode"
+        const val FUTURISTIC_MODE : String = "futuristic_mode"
         const val DAY_SPRING_MIN = 80
         const val DAY_SPRING_MAX = 172
         const val DAY_SUMMER_MIN = DAY_SPRING_MAX

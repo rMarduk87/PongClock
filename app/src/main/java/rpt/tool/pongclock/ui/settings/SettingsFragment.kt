@@ -1,56 +1,116 @@
 package rpt.tool.pongclock.ui.settings
 
 import android.annotation.SuppressLint
-import android.os.Build
 import android.os.Bundle
 import android.view.View
-import android.widget.PopupWindow
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import rpt.tool.pongclock.BaseFragment
-import rpt.tool.pongclock.databinding.SettingsFragmentBinding
+import kotlin.math.max
+import rpt.tool.pongclock.databinding.FragmentSettingsBinding
 import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
-import rpt.tool.pongclock.R
 import rpt.tool.pongclock.utils.navigation.safeNavController
 import rpt.tool.pongclock.utils.navigation.safeNavigate
 
 
 @Suppress("DEPRECATION")
-class SettingsFragment : BaseFragment<SettingsFragmentBinding>(SettingsFragmentBinding::inflate) {
+class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsBinding::inflate) {
 
-    private var mDropdown: PopupWindow? = null
-
-    @SuppressLint("ObsoleteSdkInt", "SetTextI18n")
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.leftIconBlock.setOnClickListener{ finish() }
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+            
+            // Combine system bars and display cutout insets
+            val left = max(systemBars.left, displayCutout.left)
+            val right = max(systemBars.right, displayCutout.right)
+            val top = systemBars.top
+            val bottom = systemBars.bottom
 
-        binding.switchMatrixMode.setChecked(SharedPreferencesManager.mode == 1)
-        binding.switchSeasonMode.setChecked(SharedPreferencesManager.season == 1)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            requireActivity().window.navigationBarColor = requireContext().resources.getColor(R.color.black)
-        }
-        binding.switchMatrixMode.setOnCheckedChangeListener{ _, isChecked ->
-            SharedPreferencesManager.mode = if (isChecked) 1 else 0
-            SharedPreferencesManager.season = if (isChecked) 0 else
-                if(SharedPreferencesManager.season == 1) 1 else 0
-            binding.switchMatrixMode.setChecked(SharedPreferencesManager.mode == 1)
-            binding.switchSeasonMode.setChecked(SharedPreferencesManager.season == 1)
+            v.setPadding(left, top, right, bottom)
+            insets
         }
 
-        binding.switchSeasonMode.setOnCheckedChangeListener{ _, isChecked ->
-            SharedPreferencesManager.season = if (isChecked) 1 else 0
-            SharedPreferencesManager.mode = if (isChecked) 0 else
-                if(SharedPreferencesManager.mode == 1) 1 else 0
-            binding.switchMatrixMode.setChecked(SharedPreferencesManager.mode == 1)
-            binding.switchSeasonMode.setChecked(SharedPreferencesManager.season == 1)
+        binding.toolbar.setNavigationOnClickListener { finish() }
+
+        updateSwitches()
+
+        binding.switchClassicMode.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                disableAll()
+                SharedPreferencesManager.classic = 1
+            } else {
+                SharedPreferencesManager.classic = 0
+            }
+            updateSwitches()
         }
+
+        binding.switchFuturisticMode.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                disableAll()
+                SharedPreferencesManager.futuristic = 1
+            } else {
+                SharedPreferencesManager.futuristic = 0
+            }
+            updateSwitches()
+        }
+
+        binding.switchMatrixMode.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                disableAll()
+                SharedPreferencesManager.mode = 1
+            } else {
+                SharedPreferencesManager.mode = 0
+            }
+            updateSwitches()
+        }
+
+        binding.switchSeasonMode.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                disableAll()
+                SharedPreferencesManager.season = 1
+            } else {
+                SharedPreferencesManager.season = 0
+            }
+            updateSwitches()
+        }
+
+        binding.switchBreakoutMode.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                disableAll()
+                SharedPreferencesManager.breakOut = 1
+            } else {
+                SharedPreferencesManager.breakOut = 0
+            }
+            updateSwitches()
+        }
+    }
+
+    private fun disableAll() {
+        SharedPreferencesManager.classic = 0
+        SharedPreferencesManager.futuristic = 0
+        SharedPreferencesManager.mode = 0
+        SharedPreferencesManager.season = 0
+        SharedPreferencesManager.breakOut = 0
+    }
+
+    private fun updateSwitches() {
+        binding.switchClassicMode.isChecked = SharedPreferencesManager.classic == 1
+        binding.switchFuturisticMode.isChecked = SharedPreferencesManager.futuristic == 1
+        binding.switchMatrixMode.isChecked = SharedPreferencesManager.mode == 1
+        binding.switchSeasonMode.isChecked = SharedPreferencesManager.season == 1
+        binding.switchBreakoutMode.isChecked = SharedPreferencesManager.breakOut == 1
     }
 
     private fun finish() {
-        safeNavController?.safeNavigate(SettingsFragmentDirections
-            .actionSettingsFragmentToClockFragment())
+        val action = if (SharedPreferencesManager.breakOut == 1) {
+            SettingsFragmentDirections.actionSettingsFragmentToBreakOutClockFragment()
+        } else {
+            SettingsFragmentDirections.actionSettingsFragmentToClockFragment()
+        }
+        safeNavController?.safeNavigate(action)
     }
-
-
 }

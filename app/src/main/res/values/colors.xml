@@ -15,4 +15,16 @@
     <color name="winter">#d6fffb</color>
     <color name="colorSkyBlue">#03BBFF</color>
     <color name="overlay">#BF000000</color>
+
+    <!-- Modern UI Colors -->
+    <color name="modern_background">#121212</color>
+    <color name="modern_cyan">#00E5FF</color>
+
+    <!-- Brick Colors -->
+    <color name="brick_red">#FF5252</color>
+    <color name="brick_amber">#FFD740</color>
+    <color name="brick_green">#69F0AE</color>
+    <color name="brick_blue">#40C4FF</color>
+    <color name="brick_purple">#7C4DFF</color>
+    <color name="brick_pink">#FF4081</color>
 </resources>

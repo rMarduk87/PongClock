@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/surface"
+    android:background="@color/black">
+
+    <rpt.tool.pongclock.utils.view.BreakOutTimeView
+        android:id="@+id/breakoutView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <ImageButton
+        android:id="@+id/settings"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="top|start"
+        android:layout_margin="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/settings"
+        android:padding="12dp"
+        android:scaleType="fitCenter"
+        app:srcCompat="@drawable/ic_settings"
+        app:tint="@color/white"
+        android:alpha="0.3"/>
+
+</FrameLayout>
