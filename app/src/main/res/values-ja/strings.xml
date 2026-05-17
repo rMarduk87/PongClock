@@ -4,4 +4,8 @@
     <string name="matrix">マトリックス モード</string>
     <string name="season">シーズン モード</string>
     <string name="settings">設定</string>
+    <string name="breakout_mode">ブレイクアウトモード</string>
+    <string name="classic_mode">クラシックモード</string>
+    <string name="futuristic_mode">フューチャリスティックモード</string>
+    <string name="score">スコア:</string>
 </resources>

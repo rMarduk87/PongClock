@@ -4,7 +4,6 @@ package rpt.tool.pongclock.utils.view
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.Paint.Cap
@@ -75,13 +74,6 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
         private var canvasHeight2 = 0 // height / 2
         private var canvasWidth = 0
         private var canvasWidth2 = 0 // width / 2;
-
-        private val dashedLinePaint: Paint
-        private val linePaint = Paint()
-        private val panelPaint: Paint
-        private val textPaint: Paint
-
-        private val currentDate: Date = Date()
 
         private val numbers = arrayOf( // lines to draw numbers
             floatArrayOf(
@@ -193,36 +185,59 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
             )
         )
 
+        private val dashedLinePaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        private val linePaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        private val panelPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        private val textPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        private val gridPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+        private val currentDate: Date = Date()
+
         init {
-            linePaint.color = getColor()
+            val isClassic = SharedPreferencesManager.classic == 1
+            val color = getColor()
+            
+            linePaint.color = color
             linePaint.style = Paint.Style.STROKE
             linePaint.strokeWidth = Companion.LINE_WIDTH.toFloat()
-            linePaint.strokeCap = Cap.SQUARE
+            linePaint.strokeCap = if (isClassic) Cap.SQUARE else Cap.ROUND
+            if (!isClassic) {
+                linePaint.setShadowLayer(15f, 0f, 0f, color)
+            } else {
+                linePaint.clearShadowLayer()
+            }
 
-            panelPaint = Paint()
-            panelPaint.color = getColor()
-            panelPaint.style = Paint.Style.STROKE
+            panelPaint.color = color
+            panelPaint.style = if (isClassic) Paint.Style.STROKE else Paint.Style.FILL_AND_STROKE
             panelPaint.strokeWidth = Companion.PANEL_LINE_WIDTH.toFloat()
-            panelPaint.strokeCap = Cap.SQUARE
+            panelPaint.strokeCap = if (isClassic) Cap.SQUARE else Cap.ROUND
+            if (!isClassic) {
+                panelPaint.setShadowLayer(15f, 0f, 0f, color)
+            } else {
+                panelPaint.clearShadowLayer()
+            }
 
-            dashedLinePaint = Paint()
-            dashedLinePaint.color = getColor()
+            dashedLinePaint.color = color
             dashedLinePaint.style = Paint.Style.STROKE
             dashedLinePaint.strokeWidth = Companion.LINE_WIDTH.toFloat()
-            val pe: PathEffect = DashPathEffect(floatArrayOf(20f, 16f), 0.0f)
-            dashedLinePaint.setPathEffect(pe)
+            val pe: PathEffect = DashPathEffect(floatArrayOf(20f, 20f), 0.0f)
+            dashedLinePaint.pathEffect = pe
+            dashedLinePaint.alpha = if (isClassic) 255 else 100
 
-            textPaint = Paint()
-            textPaint.isAntiAlias = true
-            textPaint.textSize = 15f
-            textPaint.color = Color.GRAY
-            textPaint.setTypeface(Typeface.MONOSPACE)
+            textPaint.textSize = 30f
+            textPaint.color = context.getColor(R.color.white)
+            textPaint.alpha = 100
+            textPaint.typeface = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)
+
+            gridPaint.color = color
+            gridPaint.alpha = if (isClassic) 0 else 30
+            gridPaint.strokeWidth = 1f
 
             lastTime = Date()
             currentHours = lastTime.hours
             currentMinutes = lastTime.minutes
 
-            mode = Companion.STATE_PAUSE
+            mode = Companion.STATE_RUNNING
             if (DEBUG) {
                 i(this.javaClass.name, "PongThread")
             }
@@ -235,10 +250,10 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                 canvasHeight = height
                 canvasWidth2 = canvasWidth / 2
                 canvasHeight2 = canvasHeight / 2
-                playFieldY1 = 8
-                playFieldY2 = canvasHeight - 9
-                playFieldX1 = 5
-                playFieldX2 = canvasWidth - 5
+                playFieldY1 = 20
+                playFieldY2 = canvasHeight - 20
+                playFieldX1 = 10
+                playFieldX2 = canvasWidth - 10
 
                 leftPanel =
                     Panel(Companion.PANEL_XPOS, canvasHeight2)
@@ -246,13 +261,12 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                     canvasWidth - Companion.PANEL_XPOS,
                     canvasHeight2
                 )
-                ball = Ball(100f, 100f)
+                ball = Ball(canvasWidth2.toFloat(), canvasHeight2.toFloat())
 
-                number1X = canvasWidth2 - 100
-                number2X = canvasWidth2 - (100 - Companion.SP)
-                number3X =
-                    canvasWidth2 + (100 - Companion.SP - Companion.LW)
-                number4X = canvasWidth2 + (100 - Companion.LW)
+                number1X = canvasWidth2 - 320
+                number2X = canvasWidth2 - 140
+                number3X = canvasWidth2 + 60
+                number4X = canvasWidth2 + 240
 
                 gMode = Companion.GSTATE_NONE
                 lastTimeMillis = System.currentTimeMillis()
@@ -282,14 +296,12 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                     "new game, left wins: $left"
                 )
             }
-            ball!!.y = canvasHeight2.toFloat()
+            ball!!.y = (Math.random() * (playFieldY2 - playFieldY1) + playFieldY1).toFloat()
             ball!!.x = (if ((left)) canvasWidth2 - 40 else canvasWidth2 + 40).toFloat()
             val d = (Math.random() * 0.8 - 0.4).toFloat()
             ball!!.direction = if ((left)) 0.0f + d else Math.PI.toFloat() + d
             ball!!.computeDir()
 
-            leftPanel!!.y = canvasHeight2
-            rightPanel!!.y = canvasHeight2
             if (DEBUG) {
                 i(
                     this.javaClass.name,
@@ -300,22 +312,42 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
 
         private fun doDraw(canvas: Canvas?) {
             if(canvas != null){
-                canvas.drawColor(Color.BLACK)
+                val bgColor = if (SharedPreferencesManager.classic == 1) context.getColor(R.color.black) else context.getColor(R.color.modern_background)
+                canvas.drawColor(bgColor)
+                drawGrid(canvas)
                 if (showFPS) {
-                    canvas.drawText("FPS:$currentFPS", 10f, 25f, textPaint)
+                    canvas.drawText("FPS:$currentFPS", 50f, 50f, textPaint)
                 }
-                drawBall(canvas)
                 drawFieldAndPanels(canvas)
+                drawBall(canvas)
                 drawTime(canvas, currentHours, currentMinutes)
             }
 
         }
 
+        private fun drawGrid(canvas: Canvas) {
+            val step = 100
+            for (x in 0..canvasWidth step step) {
+                canvas.drawLine(x.toFloat(), 0f, x.toFloat(), canvasHeight.toFloat(), gridPaint)
+            }
+            for (y in 0..canvasHeight step step) {
+                canvas.drawLine(0f, y.toFloat(), canvasWidth.toFloat(), y.toFloat(), gridPaint)
+            }
+        }
+
         private fun drawBall(canvas: Canvas?) {
-            canvas!!.drawPoint(ball!!.x, ball!!.y, panelPaint)
+            if (SharedPreferencesManager.classic == 1) {
+                canvas!!.drawRect(ball!!.x - 5, ball!!.y - 5, ball!!.x + 5, ball!!.y + 5, panelPaint)
+            } else {
+                canvas!!.drawCircle(ball!!.x, ball!!.y, 10f, panelPaint)
+            }
         }
 
         private fun drawTime(canvas: Canvas?, hours: Int, minutes: Int) {
+            val color = getColor()
+            linePaint.color = color
+            linePaint.setShadowLayer(20f, 0f, 0f, color)
+            
             drawNumber(canvas, number1X, hours / 10)
             drawNumber(canvas, number2X, hours % 10)
             drawNumber(canvas, number3X, minutes / 10)
@@ -324,18 +356,23 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
 
         private fun drawNumber(canvas: Canvas?, x: Int, n: Int) {
             canvas!!.withSave() {
-                canvas.translate(x.toFloat(), Companion.NUMBER_Y.toFloat())
+                canvas.translate(x.toFloat(), (canvasHeight / 2 - 100).toFloat()) // Center numbers vertically a bit more
+                canvas.scale(5f, 5f) // Much bigger numbers
                 canvas.drawLines(numbers[n], linePaint)
             }
         }
 
         private fun drawFieldAndPanels(c: Canvas?) {
-            c!!.drawLine(0f, 3f, canvasWidth.toFloat(), 3f, linePaint)
+            val color = getColor()
+            linePaint.color = color
+            panelPaint.color = color
+            
+            c!!.drawLine(0f, 10f, canvasWidth.toFloat(), 10f, linePaint)
             c.drawLine(
                 0f,
-                (canvasHeight - 4).toFloat(),
+                (canvasHeight - 10).toFloat(),
                 canvasWidth.toFloat(),
-                (canvasHeight - 4).toFloat(),
+                (canvasHeight - 10).toFloat(),
                 linePaint
             )
             c.drawLine(
@@ -345,20 +382,39 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                 canvasHeight.toFloat(),
                 dashedLinePaint
             )
-            c.drawLine(
-                leftPanel!!.x.toFloat(),
-                (leftPanel!!.y - Companion.PANEL_LENGTH).toFloat(),
-                leftPanel!!.x.toFloat(),
-                (leftPanel!!.y + Companion.PANEL_LENGTH).toFloat(),
-                panelPaint
-            )
-            c.drawLine(
-                rightPanel!!.x.toFloat(),
-                (rightPanel!!.y - Companion.PANEL_LENGTH).toFloat(),
-                rightPanel!!.x.toFloat(),
-                (rightPanel!!.y + Companion.PANEL_LENGTH).toFloat(),
-                panelPaint
-            )
+            
+            if (SharedPreferencesManager.classic == 1) {
+                c.drawLine(
+                    leftPanel!!.x.toFloat(),
+                    (leftPanel!!.y - Companion.PANEL_LENGTH).toFloat(),
+                    leftPanel!!.x.toFloat(),
+                    (leftPanel!!.y + Companion.PANEL_LENGTH).toFloat(),
+                    panelPaint
+                )
+                c.drawLine(
+                    rightPanel!!.x.toFloat(),
+                    (rightPanel!!.y - Companion.PANEL_LENGTH).toFloat(),
+                    rightPanel!!.x.toFloat(),
+                    (rightPanel!!.y + Companion.PANEL_LENGTH).toFloat(),
+                    panelPaint
+                )
+            } else {
+                val panelRectLeft = android.graphics.RectF(
+                    (leftPanel!!.x - 5).toFloat(),
+                    (leftPanel!!.y - Companion.PANEL_LENGTH * 2).toFloat(),
+                    (leftPanel!!.x + 5).toFloat(),
+                    (leftPanel!!.y + Companion.PANEL_LENGTH * 2).toFloat()
+                )
+                c.drawRoundRect(panelRectLeft, 5f, 5f, panelPaint)
+
+                val panelRectRight = android.graphics.RectF(
+                    (rightPanel!!.x - 5).toFloat(),
+                    (rightPanel!!.y - Companion.PANEL_LENGTH * 2).toFloat(),
+                    (rightPanel!!.x + 5).toFloat(),
+                    (rightPanel!!.y + Companion.PANEL_LENGTH * 2).toFloat()
+                )
+                c.drawRoundRect(panelRectRight, 5f, 5f, panelPaint)
+            }
         }
 
         private fun updatePhysics(now: Long, deltaMillis: Long) {
@@ -559,12 +615,12 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
     } // PongThread
 
     private fun getColor(): Int {
-        var color = Color.WHITE
-        if(SharedPreferencesManager.mode == 1 && SharedPreferencesManager.season == 0){
+        var color = context.getColor(R.color.modern_cyan)
+        if (SharedPreferencesManager.classic == 1) {
+            color = context.getColor(R.color.white)
+        } else if (SharedPreferencesManager.mode == 1) {
             color = context.getColor(R.color.matrix)
-        }
-        else if((SharedPreferencesManager.mode == 1 || SharedPreferencesManager.mode ==0)
-            && SharedPreferencesManager.season == 1){
+        } else if (SharedPreferencesManager.season == 1) {
             val calendar = Calendar.getInstance()
             val currentDayOfYear = calendar[Calendar.DAY_OF_YEAR]
             color = context.getColor(AppUtils.getSeason(currentDayOfYear).toColor())

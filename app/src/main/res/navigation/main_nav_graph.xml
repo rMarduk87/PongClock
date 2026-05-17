@@ -8,20 +8,32 @@
         android:id="@+id/clockFragment"
         android:name="rpt.tool.pongclock.ui.clock.ClockFragment"
         android:label="ClockFragment">
-
         <action
             android:id="@+id/action_clockFragment_to_settingsFragment"
-            app:destination="@id/settingsFragment">
-        </action>
-
+            app:destination="@id/settingsFragment" />
+        <action
+            android:id="@+id/action_clockFragment_to_breakOutClockFragment"
+            app:destination="@id/breakOutClockFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/breakOutClockFragment"
+        android:name="rpt.tool.pongclock.ui.breakout.BreakOutClockFragment"
+        android:label="BreakOutClockFragment">
+        <action
+            android:id="@+id/action_breakOutClockFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
+    </fragment>
+
     <fragment
         android:id="@+id/settingsFragment"
         android:name="rpt.tool.pongclock.ui.settings.SettingsFragment"
         android:label="SettingsFragment">
-
         <action
             android:id="@+id/action_settingsFragment_to_clockFragment"
             app:destination="@id/clockFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_breakOutClockFragment"
+            app:destination="@id/breakOutClockFragment" />
     </fragment>
 </navigation>
