@@ -22,4 +22,5 @@
     <string name="opening_clock">Abriendo Reloj…</string>
     <string name="opening_settings">Abriendo Configuración…</string>
     <string name="nav_failed">Error de navegación</string>
+    <string name="img" />
 </resources>

@@ -22,4 +22,5 @@
     <string name="opening_clock">クロックを開いています…</string>
     <string name="opening_settings">設定を開いています…</string>
     <string name="nav_failed">ナビゲーションに失敗しました</string>
+    <string name="img" />
 </resources>

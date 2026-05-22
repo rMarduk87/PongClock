@@ -22,4 +22,5 @@
     <string name="opening_clock">Apertura Orologio…</string>
     <string name="opening_settings">Apertura Impostazioni…</string>
     <string name="nav_failed">Navigazione fallita</string>
+    <string name="img" />
 </resources>

@@ -35,6 +35,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
         updateSwitches()
 
         binding.switchClassicMode.setOnCheckedChangeListener { _, isChecked ->
+            if (_binding == null) return@setOnCheckedChangeListener
             if (isChecked) {
                 disableAll()
                 SharedPreferencesManager.classic = 1
@@ -45,6 +46,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
         }
 
         binding.switchFuturisticMode.setOnCheckedChangeListener { _, isChecked ->
+            if (_binding == null) return@setOnCheckedChangeListener
             if (isChecked) {
                 disableAll()
                 SharedPreferencesManager.futuristic = 1
@@ -55,6 +57,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
         }
 
         binding.switchMatrixMode.setOnCheckedChangeListener { _, isChecked ->
+            if (_binding == null) return@setOnCheckedChangeListener
             if (isChecked) {
                 disableAll()
                 SharedPreferencesManager.mode = 1
@@ -65,6 +68,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
         }
 
         binding.switchSeasonMode.setOnCheckedChangeListener { _, isChecked ->
+            if (_binding == null) return@setOnCheckedChangeListener
             if (isChecked) {
                 disableAll()
                 SharedPreferencesManager.season = 1
@@ -75,6 +79,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
         }
 
         binding.switchBreakoutMode.setOnCheckedChangeListener { _, isChecked ->
+            if (_binding == null) return@setOnCheckedChangeListener
             if (isChecked) {
                 disableAll()
                 SharedPreferencesManager.breakOut = 1
@@ -94,10 +99,24 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
     }
 
     private fun updateSwitches() {
-        binding.switchClassicMode.isChecked = SharedPreferencesManager.classic == 1
-        binding.switchFuturisticMode.isChecked = SharedPreferencesManager.futuristic == 1
-        binding.switchMatrixMode.isChecked = SharedPreferencesManager.mode == 1
-        binding.switchSeasonMode.isChecked = SharedPreferencesManager.season == 1
-        binding.switchBreakoutMode.isChecked = SharedPreferencesManager.breakOut == 1
+        _binding?.let {
+            it.switchClassicMode.isChecked = SharedPreferencesManager.classic == 1
+            it.switchFuturisticMode.isChecked = SharedPreferencesManager.futuristic == 1
+            it.switchMatrixMode.isChecked = SharedPreferencesManager.mode == 1
+            it.switchSeasonMode.isChecked = SharedPreferencesManager.season == 1
+            it.switchBreakoutMode.isChecked = SharedPreferencesManager.breakOut == 1
+        }
+    }
+
+    override fun onDestroyView() {
+        // Clear listeners to avoid callbacks during/after destruction
+        _binding?.let {
+            it.switchClassicMode.setOnCheckedChangeListener(null)
+            it.switchFuturisticMode.setOnCheckedChangeListener(null)
+            it.switchMatrixMode.setOnCheckedChangeListener(null)
+            it.switchSeasonMode.setOnCheckedChangeListener(null)
+            it.switchBreakoutMode.setOnCheckedChangeListener(null)
+        }
+        super.onDestroyView()
     }
 }

@@ -41,6 +41,7 @@ class BreakOutTimeView(context: Context?, attrs: AttributeSet?) :
     }
 
     inner class BreakOutThread(private val surfaceHolder: SurfaceHolder) : Thread() {
+        @Volatile
         private var running = true
         private var canvasWidth = 0
         private var canvasHeight = 0
@@ -69,14 +70,16 @@ class BreakOutTimeView(context: Context?, attrs: AttributeSet?) :
             letterSpacing = 0.2f
         }
 
-        private var bgColor: Int = 0
-        private var mainColor: Int = 0
+        private var bgColor: Int = Color.BLACK
+        private var mainColor: Int = Color.WHITE
+        private val calendar = Calendar.getInstance()
 
         init { updateColors() }
 
         private fun updateColors() {
-            bgColor = context!!.getColor(R.color.modern_background)
-            mainColor = context!!.getColor(R.color.white)
+            val ctx = context ?: return
+            bgColor = ctx.getColor(R.color.modern_background)
+            mainColor = ctx.getColor(R.color.white)
             ballPaint.color = mainColor
             ballPaint.setShadowLayer(20f, 0f, 0f, mainColor)
             paddlePaint.color = mainColor
@@ -99,12 +102,20 @@ class BreakOutTimeView(context: Context?, attrs: AttributeSet?) :
                 ballRadius = width * 0.015f
                 paddleWidth = width * 0.2f
                 paddleHeight = (height * 0.03f).coerceAtLeast(20f)
-                textPaint.textSize = (height * 0.12f).coerceAtLeast(60f)
+                val ctx = context
+                if (ctx != null) {
+                    textPaint.textSize = ctx.resources.getDimension(R.dimen.breakout_score_text_size)
+                }
                 resetGame()
             }
         }
 
         private fun resetGame() {
+            createBricks()
+            resetBall()
+        }
+
+        private fun resetBall() {
             ballX = canvasWidth / 2f
             ballY = canvasHeight / 2f
             val bx = canvasWidth * 0.015f
@@ -112,10 +123,10 @@ class BreakOutTimeView(context: Context?, attrs: AttributeSet?) :
             ballDX = if (Math.random() > 0.5) bx else -bx
             ballDY = -by
             paddleX = canvasWidth / 2f - paddleWidth / 2f
-            createBricks()
         }
 
         private fun createBricks() {
+            val ctx = context ?: return
             bricks.clear()
             val padding = canvasWidth * 0.01f
             val availableWidth = canvasWidth - (brickCols + 1) * padding
@@ -123,12 +134,12 @@ class BreakOutTimeView(context: Context?, attrs: AttributeSet?) :
             val brickHeight = (canvasHeight * 0.04f).coerceAtLeast(20f)
             val topOffset = canvasHeight * 0.25f
             val colors = intArrayOf(
-                context!!.getColor(R.color.brick_red),
-                context!!.getColor(R.color.brick_amber),
-                context!!.getColor(R.color.brick_green),
-                context!!.getColor(R.color.brick_blue),
-                context!!.getColor(R.color.brick_purple),
-                context!!.getColor(R.color.brick_pink)
+                ctx.getColor(R.color.brick_red),
+                ctx.getColor(R.color.brick_amber),
+                ctx.getColor(R.color.brick_green),
+                ctx.getColor(R.color.brick_blue),
+                ctx.getColor(R.color.brick_purple),
+                ctx.getColor(R.color.brick_pink)
             )
             for (row in 0 until brickRows) {
                 for (col in 0 until brickCols) {
@@ -146,21 +157,25 @@ class BreakOutTimeView(context: Context?, attrs: AttributeSet?) :
                 val delta = now - lastFrameTime
                 if (delta >= 16) {
                     lastFrameTime = now
-                    val canvas = surfaceHolder.lockCanvas()
-                    if (canvas != null) {
-                        updatePhysics()
-                        doDraw(canvas)
-                        surfaceHolder.unlockCanvasAndPost(canvas)
+                    var canvas: Canvas? = null
+                    try {
+                        canvas = surfaceHolder.lockCanvas()
+                        if (canvas != null) {
+                            updatePhysics()
+                            doDraw(canvas)
+                        }
+                    } finally {
+                        canvas?.let { surfaceHolder.unlockCanvasAndPost(it) }
                     }
                 } else try { sleep(2) } catch (e: InterruptedException) {}
             }
         }
 
         private fun updatePhysics() {
-            val cal = Calendar.getInstance()
-            currentHours = cal[Calendar.HOUR_OF_DAY]
-            currentMinutes = cal[Calendar.MINUTE]
-            currentSeconds = cal[Calendar.SECOND]
+            calendar.timeInMillis = System.currentTimeMillis()
+            currentHours = calendar[Calendar.HOUR_OF_DAY]
+            currentMinutes = calendar[Calendar.MINUTE]
+            currentSeconds = calendar[Calendar.SECOND]
             if (currentSeconds == 0 && lastProcessedSecond == 59) resetGame()
             lastProcessedSecond = currentSeconds
 
@@ -189,12 +204,13 @@ class BreakOutTimeView(context: Context?, attrs: AttributeSet?) :
                     break
                 }
             }
-            if (ballY > canvasHeight) resetGame()
+            if (ballY > canvasHeight) resetBall()
         }
 
         private fun doDraw(canvas: Canvas) {
+            val ctx = context ?: return
             canvas.drawColor(bgColor)
-            val scoreText = "${context!!.getString(R.string.score)} ${currentHours.toString().padStart(2, '0')}:${currentMinutes.toString().padStart(2, '0')}"
+            val scoreText = "${ctx.getString(R.string.score)} ${currentHours.toString().padStart(2, '0')}:${currentMinutes.toString().padStart(2, '0')}"
             canvas.drawText(scoreText, canvasWidth / 2f, canvasHeight * 0.18f, textPaint)
             for (brick in bricks) if (brick.active) { brickPaint.color = brick.color; canvas.drawRoundRect(brick.rect, 8f, 8f, brickPaint) }
             canvas.drawRoundRect(RectF(paddleX, canvasHeight - paddleYOffset, paddleX + paddleWidth, canvasHeight - paddleYOffset + paddleHeight), 10f, 10f, paddlePaint)

@@ -1,5 +1,7 @@
 package rpt.tool.pongclock.ui.menu
 
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
 import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.os.Bundle
@@ -9,6 +11,7 @@ import androidx.core.view.WindowInsetsCompat
 import rpt.tool.pongclock.BaseFragment
 import rpt.tool.pongclock.R
 import rpt.tool.pongclock.databinding.FragmentMenuBinding
+import rpt.tool.pongclock.utils.view.*
 import rpt.tool.pongclock.utils.AppUtils
 import rpt.tool.pongclock.utils.extensions.toColor
 import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
@@ -18,10 +21,13 @@ import java.util.Calendar
 
 class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::inflate) {
 
+    private var pulseAnimator: ObjectAnimator? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
+
         applyTheme()
+        startPulseAnimation()
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -42,32 +48,40 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
         }
 
         binding.btnSettings.setOnClickListener {
-            safeNavController?.safeNavigate(MenuFragmentDirections.actionMenuFragmentToSettingsFragment())
+            safeNavController?.safeNavigate(
+                MenuFragmentDirections.actionMenuFragmentToSettingsFragment())
         }
     }
 
     override fun onResume() {
         super.onResume()
         applyTheme()
+        pulseAnimator?.resume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        pulseAnimator?.pause()
+    }
+
+    override fun onDestroyView() {
+        pulseAnimator?.cancel()
+        super.onDestroyView()
     }
 
     private fun applyTheme() {
         val context = requireContext()
         val calendar = Calendar.getInstance()
         val holiday = AppUtils.getHoliday(calendar)
-        
+
         val isClassic = SharedPreferencesManager.classic == 1
         val isMatrix = SharedPreferencesManager.mode == 1
         val isSeason = SharedPreferencesManager.season == 1
         val isBreakout = SharedPreferencesManager.breakOut == 1
 
         val white = context.getColor(R.color.white)
-        val black = context.getColor(R.color.black)
 
-        binding.root.setBackgroundColor(black)
-        binding.title.setTextColor(white)
-        binding.title.typeface = Typeface.DEFAULT_BOLD
-        binding.title.text = context.getString(R.string.app_name)
+        resetVisualEffects()
 
         when {
             holiday != AppUtils.Companion.Holiday.None -> {
@@ -78,8 +92,11 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
                 binding.title.setTextColor(white)
                 binding.title.typeface = Typeface.MONOSPACE
                 binding.title.text = context.getString(R.string.classic_title)
-                styleButton(binding.btnClock, white, true)
-                styleButton(binding.btnSettings, white, true)
+
+                binding.fxContainer.addView(PongEffectView(context))
+
+                styleButton(binding.btnClock, white, true, cornerRadius = 0)
+                styleButton(binding.btnSettings, white, true, cornerRadius = 0)
             }
             isMatrix -> {
                 val matrixGreen = context.getColor(R.color.matrix)
@@ -87,59 +104,84 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
                 binding.title.setTextColor(matrixGreen)
                 binding.title.typeface = Typeface.MONOSPACE
                 binding.title.text = context.getString(R.string.matrix_title)
-                styleButton(binding.btnClock, matrixGreen, true)
-                styleButton(binding.btnSettings, matrixGreen, true)
+                binding.title.setShadowLayer(15f, 0f, 0f, matrixGreen)
+
+                binding.fxContainer.addView(MatrixEffectView(context))
+
+                styleButton(binding.btnClock, matrixGreen, true, cornerRadius = 0)
+                styleButton(binding.btnSettings, matrixGreen, true, cornerRadius = 0)
+            }
+            isBreakout -> {
+                binding.root.setBackgroundColor(context.getColor(R.color.breakout_bg))
+                binding.title.setTextColor(context.getColor(R.color.brick_amber))
+                binding.title.text = context.getString(R.string.breakout_title)
+                binding.title.setShadowLayer(5f, 5f, 5f, context.getColor(R.color.black))
+
+                binding.fxContainer.addView(BreakoutSimulatedView(context))
+
+                styleButton(binding.btnClock, context.getColor(R.color.brick_red),
+                    false, cornerRadius = 8)
+                styleButton(binding.btnSettings, context.getColor(R.color.brick_blue),
+                    false, cornerRadius = 8)
             }
             isSeason -> {
                 val season = AppUtils.getSeason(calendar[Calendar.DAY_OF_YEAR])
                 val seasonColor = context.getColor(season.toColor())
                 binding.root.setBackgroundColor(context.getColor(R.color.modern_bg))
                 binding.title.setTextColor(seasonColor)
-                binding.title.text = when(season) {
-                    AppUtils.Companion.Season.Spring -> context.getString(R.string.spring_mode)
-                    AppUtils.Companion.Season.Summer -> context.getString(R.string.summer_mode)
-                    AppUtils.Companion.Season.Fall -> context.getString(R.string.fall_mode)
-                    else -> context.getString(R.string.winter_mode)
+
+                when(season) {
+                    AppUtils.Companion.Season.Spring -> {
+                        binding.title.text = context.getString(R.string.spring_mode)
+                        binding.fxContainer.addView(ParticleEffectView(context,
+                            ParticleShape.LEAF, listOf(context.getColor(R.color.spring_particle)),
+                            40, 0.8f))
+                    }
+                    AppUtils.Companion.Season.Summer -> {
+                        binding.title.text = context.getString(R.string.summer_mode)
+                        binding.fxContainer.addView(ParticleEffectView(context,
+                            ParticleShape.CIRCLE, listOf(context.getColor(R.color.yellow)),
+                            30, 0.4f))
+                    }
+                    AppUtils.Companion.Season.Fall -> {
+                        binding.title.text = context.getString(R.string.fall_mode)
+                        binding.fxContainer.addView(ParticleEffectView(context,
+                            ParticleShape.LEAF, listOf(
+                                context.getColor(R.color.fall_leaf_1),
+                                context.getColor(R.color.fall_leaf_2)),
+                            50, 1.2f))
+                    }
+                    else -> {
+                        binding.title.text = context.getString(R.string.winter_mode)
+                        binding.fxContainer.addView(ParticleEffectView(context,
+                            ParticleShape.CIRCLE, listOf(context.getColor(R.color.white)),
+                            100, 1.0f))
+                    }
                 }
-                styleButton(binding.btnClock, seasonColor, false)
-                styleButton(binding.btnSettings, seasonColor, true)
-            }
-            isBreakout -> {
-                binding.root.setBackgroundColor(context.getColor(R.color.breakout_bg))
-                binding.title.setTextColor(context.getColor(R.color.brick_amber))
-                binding.title.text = context.getString(R.string.breakout_title)
-                styleButton(binding.btnClock, context.getColor(R.color.brick_red), false)
-                styleButton(binding.btnSettings, context.getColor(R.color.brick_blue), false)
+
+                styleButton(binding.btnClock, seasonColor, false, cornerRadius = 32)
+                styleButton(binding.btnSettings, seasonColor, true, cornerRadius = 32)
             }
             else -> {
                 val cyan = context.getColor(R.color.modern_cyan)
                 binding.root.setBackgroundColor(context.getColor(R.color.modern_bg))
                 binding.title.setTextColor(cyan)
-                styleButton(binding.btnClock, cyan, false)
-                styleButton(binding.btnSettings, cyan, true)
+                binding.title.setShadowLayer(20f, 0f, 0f, cyan)
+
+                binding.fxContainer.addView(FuturisticEffectView(context))
+
+                styleButton(binding.btnClock, cyan, false, cornerRadius = 24)
+                styleButton(binding.btnSettings, cyan, true, cornerRadius = 24)
             }
         }
     }
 
-    private fun styleButton(button: com.google.android.material.button.MaterialButton, color: Int, isOutlined: Boolean) {
-        if (isOutlined) {
-            button.backgroundTintList = ColorStateList.valueOf(android.graphics.Color.TRANSPARENT)
-            button.strokeColor = ColorStateList.valueOf(color)
-            button.strokeWidth = 4
-            button.setTextColor(color)
-            button.rippleColor = ColorStateList.valueOf(color).withAlpha(40)
-        } else {
-            button.backgroundTintList = ColorStateList.valueOf(color)
-            button.setTextColor(if (isDarkColor(color)) android.graphics.Color.WHITE else android.graphics.Color.BLACK)
-            button.strokeWidth = 0
-            button.rippleColor = ColorStateList.valueOf(android.graphics.Color.WHITE).withAlpha(60)
-        }
-        button.cornerRadius = 4 
-    }
-
-    private fun isDarkColor(color: Int): Boolean {
-        val darkness = 1 - (0.299 * android.graphics.Color.red(color) + 0.587 * android.graphics.Color.green(color) + 0.114 * android.graphics.Color.blue(color)) / 255
-        return darkness >= 0.5
+    private fun resetVisualEffects() {
+        val context = requireContext()
+        binding.root.setBackgroundColor(context.getColor(R.color.black))
+        binding.title.typeface = Typeface.DEFAULT_BOLD
+        binding.title.setShadowLayer(0f, 0f, 0f, context.getColor(android.R.color.transparent))
+        binding.fxContainer.removeAllViews()
     }
 
     private fun applyHolidayTheme(holiday: AppUtils.Companion.Holiday) {
@@ -147,12 +189,16 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
         when (holiday) {
             AppUtils.Companion.Holiday.Halloween -> {
                 val orange = context.getColor(R.color.halloween_orange)
-                binding.root.setBackgroundColor(context.getColor(R.color.black))
+                binding.root.setBackgroundColor(context.getColor(R.color.halloween_bg))
                 binding.title.setTextColor(orange)
                 binding.title.text = context.getString(R.string.halloween)
                 binding.title.typeface = Typeface.create("serif", Typeface.BOLD)
-                styleButton(binding.btnClock, orange, true)
-                styleButton(binding.btnSettings, orange, true)
+                binding.title.setShadowLayer(15f, 0f, 0f, context.getColor(R.color.halloween_shadow))
+
+                binding.fxContainer.addView(HalloweenEffectView(context))
+
+                styleButton(binding.btnClock, orange, true, cornerRadius = 16)
+                styleButton(binding.btnSettings, orange, true, cornerRadius = 16)
             }
             AppUtils.Companion.Holiday.Christmas -> {
                 val red = context.getColor(R.color.christmas_red)
@@ -160,18 +206,71 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
                 binding.root.setBackgroundColor(context.getColor(R.color.christmas_bg))
                 binding.title.setTextColor(red)
                 binding.title.text = context.getString(R.string.christmas)
-                styleButton(binding.btnClock, red, false)
-                styleButton(binding.btnSettings, green, false)
+                binding.title.setShadowLayer(15f, 0f, 0f, context.getColor(R.color.yellow))
+
+                binding.fxContainer.addView(ParticleEffectView(context,
+                    ParticleShape.CIRCLE, listOf(context.getColor(R.color.white)),
+                    100, 1.0f))
+
+                styleButton(binding.btnClock, red, false, cornerRadius = 24)
+                styleButton(binding.btnSettings, green, false, cornerRadius = 24)
             }
             AppUtils.Companion.Holiday.NewYear -> {
                 val gold = context.getColor(R.color.newyear_gold)
                 binding.root.setBackgroundColor(context.getColor(R.color.newyear_bg))
                 binding.title.setTextColor(gold)
                 binding.title.text = context.getString(R.string.new_year)
-                styleButton(binding.btnClock, gold, true)
-                styleButton(binding.btnSettings, gold, false)
+                binding.title.setShadowLayer(10f, 2f, 2f, context.getColor(R.color.black))
+
+                binding.fxContainer.addView(FireworksEffectView(context))
+
+                styleButton(binding.btnClock, gold, true, cornerRadius = 24)
+                styleButton(binding.btnSettings, gold, false, cornerRadius = 24)
             }
             else -> {}
+        }
+    }
+
+    private fun styleButton(
+        button: com.google.android.material.button.MaterialButton,
+        color: Int,
+        isOutlined: Boolean,
+        cornerRadius: Int = 12
+    ) {
+        val context = requireContext()
+        if (isOutlined) {
+            button.backgroundTintList = ColorStateList.valueOf(context.getColor(android.R.color.transparent))
+            button.strokeColor = ColorStateList.valueOf(color)
+            button.strokeWidth = 4
+            button.setTextColor(color)
+            button.rippleColor = ColorStateList.valueOf(color).withAlpha(40)
+        } else {
+            button.backgroundTintList = ColorStateList.valueOf(color)
+            button.setTextColor(if (isDarkColor(color)) context.getColor(R.color.white) else context.getColor(R.color.black))
+            button.strokeWidth = 0
+            button.rippleColor = ColorStateList.valueOf(context.getColor(R.color.white)).withAlpha(60)
+        }
+
+        val density = resources.displayMetrics.density
+        button.cornerRadius = (cornerRadius * density).toInt()
+    }
+
+    private fun isDarkColor(color: Int): Boolean {
+        val darkness = 1 - (0.299 * android.graphics.Color.red(color) + 0.587 * android.graphics.Color.green(color) + 0.114 *
+                android.graphics.Color.blue(color)) / 255
+        return darkness >= 0.5
+    }
+
+    private fun startPulseAnimation() {
+        pulseAnimator = ObjectAnimator.ofPropertyValuesHolder(
+            binding.btnClock,
+            PropertyValuesHolder.ofFloat("scaleX", 1.05f),
+            PropertyValuesHolder.ofFloat("scaleY", 1.05f)
+        ).apply {
+            duration = 1000
+            repeatCount = ObjectAnimator.INFINITE
+            repeatMode = ObjectAnimator.REVERSE
+            start()
         }
     }
 }

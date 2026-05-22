@@ -17,10 +17,10 @@ class BreakOutClockFragment: BaseFragment<FragmentBreakOutClockBinding>(
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
             
-            val left = Math.max(systemBars.left, displayCutout.left)
-            val right = Math.max(systemBars.right, displayCutout.right)
-            val top = Math.max(systemBars.top, displayCutout.top)
-            val bottom = Math.max(systemBars.bottom, displayCutout.bottom)
+            val left = systemBars.left.coerceAtLeast(displayCutout.left)
+            val right = systemBars.right.coerceAtLeast(displayCutout.right)
+            val top = systemBars.top.coerceAtLeast(displayCutout.top)
+            val bottom = systemBars.bottom.coerceAtLeast(displayCutout.bottom)
             
             v.setPadding(left, top, right, bottom)
             insets

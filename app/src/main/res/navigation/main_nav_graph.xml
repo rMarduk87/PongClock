@@ -22,7 +22,13 @@
     <fragment
         android:id="@+id/clockFragment"
         android:name="rpt.tool.pongclock.ui.clock.ClockFragment"
-        android:label="ClockFragment" />
+        android:label="ClockFragment">
+        <action
+            android:id="@+id/action_clockFragment_to_breakOutClockFragment"
+            app:destination="@id/breakOutClockFragment"
+            app:popUpTo="@id/clockFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/breakOutClockFragment"

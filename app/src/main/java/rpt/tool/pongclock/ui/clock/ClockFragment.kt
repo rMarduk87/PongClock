@@ -4,12 +4,13 @@ import android.os.Bundle
 import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.navigation.fragment.findNavController
 import rpt.tool.pongclock.BaseFragment
 import rpt.tool.pongclock.R
 import rpt.tool.pongclock.databinding.FragmentClockBinding
 import rpt.tool.pongclock.utils.AppUtils
 import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
+import rpt.tool.pongclock.utils.navigation.safeNavController
+import rpt.tool.pongclock.utils.navigation.safeNavigate
 import java.util.Calendar
 
 @Suppress("DEPRECATION")
@@ -20,7 +21,7 @@ class ClockFragment : BaseFragment<FragmentClockBinding>(FragmentClockBinding::i
 
         val holiday = AppUtils.getHoliday(Calendar.getInstance())
         if (SharedPreferencesManager.breakOut == 1 && holiday == AppUtils.Companion.Holiday.None) {
-            findNavController().navigate(R.id.breakOutClockFragment)
+            safeNavController?.safeNavigate(R.id.action_clockFragment_to_breakOutClockFragment)
             return
         }
 
