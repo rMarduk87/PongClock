@@ -1,5 +1,6 @@
 package rpt.tool.pongclock.utils
 
+import java.util.Calendar
 
 class AppUtils {
     companion object {
@@ -26,9 +27,26 @@ class AppUtils {
             Fall;
         }
 
+        enum class Holiday {
+            None,
+            Halloween,
+            Christmas,
+            NewYear;
+        }
+
+        fun getHoliday(calendar: Calendar): Holiday {
+            val month = calendar.get(Calendar.MONTH) // 0-based: 0=Jan, 9=Oct, 11=Dec
+            val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+            return when (month) {
+                Calendar.OCTOBER if day == 31 -> Holiday.Halloween
+                Calendar.DECEMBER if day == 25 -> Holiday.Christmas
+                Calendar.JANUARY if day == 1 -> Holiday.NewYear
+                else -> Holiday.None
+            }
+        }
+
         fun getSeason(dayOfYear: Int): Season {
-
-
             var result = Season.Winter
             when (dayOfYear) {
                 in (DAY_SPRING_MIN + 1)..DAY_SPRING_MAX -> {

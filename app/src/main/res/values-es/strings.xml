@@ -8,4 +8,18 @@
     <string name="classic_mode">Modo Clásico</string>
     <string name="futuristic_mode">Modo Futurista</string>
     <string name="score">PUNTAJE:</string>
+    <string name="clock">Reloj</string>
+    <string name="halloween">HALLOWEEN</string>
+    <string name="christmas">FELIZ NAVIDAD</string>
+    <string name="new_year">FELIZ AÑO NUEVO</string>
+    <string name="classic_title">MENÚ PONG</string>
+    <string name="matrix_title">THE MATRIX</string>
+    <string name="breakout_title">BREAKOUT</string>
+    <string name="spring_mode">PRIMAVERA</string>
+    <string name="summer_mode">VERANO</string>
+    <string name="fall_mode">OTOÑO</string>
+    <string name="winter_mode">INVIERNO</string>
+    <string name="opening_clock">Abriendo Reloj…</string>
+    <string name="opening_settings">Abriendo Configuración…</string>
+    <string name="nav_failed">Error de navegación</string>
 </resources>

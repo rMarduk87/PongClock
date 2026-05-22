@@ -3,32 +3,25 @@
 package rpt.tool.pongclock.utils.view
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.DashPathEffect
-import android.graphics.Paint
-import android.graphics.Paint.Cap
-import android.graphics.PathEffect
-import android.graphics.Typeface
+import android.graphics.*
 import android.util.AttributeSet
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import androidx.core.graphics.withSave
 import rpt.tool.pongclock.R
 import rpt.tool.pongclock.utils.AppUtils
 import rpt.tool.pongclock.utils.extensions.toColor
-import rpt.tool.pongclock.utils.log.i
-import rpt.tool.pongclock.utils.log.e
 import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
 import java.util.Calendar
 import java.util.Date
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
-import androidx.core.graphics.withSave
-
 
 class PongTimeView(context: Context?, attrs: AttributeSet?) :
     SurfaceView(context, attrs), SurfaceHolder.Callback {
-    val thread: PongThread
+
+    private var thread: PongThread? = null
 
     internal inner class Panel(var x: Int, var y: Int)
 
@@ -47,17 +40,16 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
         private var leftPanel: Panel? = null
         private var rightPanel: Panel? = null
 
-        private var number1X = 0 // xpos of number 1 (hours)
-        private var number2X = 0 // xpos of number 2 (hours)
-        private var number3X = 0 // xpos of number 3 (minutes)
-        private var number4X = 0 // xpos of number 4 (minutes)
+        private var number1X = 0
+        private var number2X = 0
+        private var number3X = 0
+        private var number4X = 0
 
-        private var currentHours: Int
-        private var currentMinutes: Int
-        private var currentFPS = 0
+        private var currentHours: Int = 0
+        private var currentMinutes: Int = 0
         private var waitCount = 0
 
-        private var playFieldY1 = 0 // playfield frame
+        private var playFieldY1 = 0
         private var playFieldY2 = 0
         private var playFieldX1 = 0
         private var playFieldX2 = 0
@@ -65,637 +57,328 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
         private var running = false
         private var lastTimeMillis: Long = 0
         private var nextTimeUpdate: Long = 0
-        private val lastTime: Date
-        private var mode: Int
         private var gMode = 0
-        private var showFPS = false
 
         private var canvasHeight = 0
-        private var canvasHeight2 = 0 // height / 2
+        private var canvasHeight2 = 0
         private var canvasWidth = 0
-        private var canvasWidth2 = 0 // width / 2;
+        private var canvasWidth2 = 0
+        private var numberScale = 5f
+        private var panelLength = 20f
+        private var panelXPos = 25f
+        private var ballSpeed = 300f
+        private var panelSpeed = 250f
 
-        private val numbers = arrayOf( // lines to draw numbers
-            floatArrayOf(
-                0f, 0f, Companion.LW.toFloat(), 0f,  // null
-                Companion.LW.toFloat(), 0f, Companion.LW.toFloat(), Companion.LH.toFloat(),
-                Companion.LW.toFloat(), Companion.LH.toFloat(), 0f, Companion.LH.toFloat(),
-                0f, Companion.LH.toFloat(), 0f, 0f
-            ),
-            floatArrayOf(
-                Companion.LW.toFloat(),
-                0f,
-                Companion.LW.toFloat(),
-                Companion.LH.toFloat()
-            ),  // one
-            floatArrayOf(
-                0f, 0f, Companion.LW.toFloat(), 0f,  // two
-                Companion.LW.toFloat(), 0f, Companion.LW.toFloat(), Companion.LH2.toFloat(),
-                Companion.LW.toFloat(), Companion.LH2.toFloat(), 0f, Companion.LH2.toFloat(),
-                0f, Companion.LH2.toFloat(), 0f, Companion.LH.toFloat(),
-                0f, Companion.LH.toFloat(), Companion.LW.toFloat(), Companion.LH.toFloat()
-            ),
-            floatArrayOf(
-                0f,
-                0f,
-                Companion.LW.toFloat(),
-                0f,  // three
-                Companion.LW.toFloat(),
-                0f,
-                Companion.LW.toFloat(),
-                Companion.LH2.toFloat(),
-                Companion.LW.toFloat(),
-                Companion.LH2.toFloat(),
-                0f,
-                Companion.LH2.toFloat(),
-                Companion.LW.toFloat(),
-                Companion.LH2.toFloat(),
-                Companion.LW.toFloat(),
-                Companion.LH.toFloat(),
-                Companion.LW.toFloat(),
-                Companion.LH.toFloat(),
-                0f,
-                Companion.LH.toFloat()
-            ),
-            floatArrayOf(
-                0f, 0f, 0f, Companion.LH2.toFloat(),  // four
-                0f, Companion.LH2.toFloat(), Companion.LW.toFloat(), Companion.LH2.toFloat(),
-                Companion.LW.toFloat(), 0f, Companion.LW.toFloat(), Companion.LH.toFloat()
-            ),
-            floatArrayOf(
-                Companion.LW.toFloat(),
-                0f,
-                0f,
-                0f,  // five
-                0f,
-                0f,
-                0f,
-                Companion.LH2.toFloat(),
-                0f,
-                Companion.LH2.toFloat(),
-                Companion.LW.toFloat(),
-                Companion.LH2.toFloat(),
-                Companion.LW.toFloat(),
-                Companion.LH2.toFloat(),
-                Companion.LW.toFloat(),
-                Companion.LH.toFloat(),
-                Companion.LW.toFloat(),
-                Companion.LH.toFloat(),
-                0f,
-                Companion.LH.toFloat()
-            ),
-            floatArrayOf(
-                Companion.LW.toFloat(),
-                0f,
-                0f,
-                0f,  // six
-                0f,
-                0f,
-                0f,
-                Companion.LH.toFloat(),
-                0f,
-                Companion.LH.toFloat(),
-                Companion.LW.toFloat(),
-                Companion.LH.toFloat(),
-                Companion.LW.toFloat(),
-                Companion.LH.toFloat(),
-                Companion.LW.toFloat(),
-                Companion.LH2.toFloat(),
-                Companion.LW.toFloat(),
-                Companion.LH2.toFloat(),
-                0f,
-                Companion.LH2.toFloat()
-            ),
-            floatArrayOf(
-                0f, 0f, Companion.LW.toFloat(), 0f,  // seven
-                Companion.LW.toFloat(), 0f, Companion.LW.toFloat(), Companion.LH.toFloat()
-            ),
-            floatArrayOf(
-                0f, 0f, Companion.LW.toFloat(), 0f,  // eight
-                Companion.LW.toFloat(), 0f, Companion.LW.toFloat(), Companion.LH.toFloat(),
-                Companion.LW.toFloat(), Companion.LH.toFloat(), 0f, Companion.LH.toFloat(),
-                0f, Companion.LH.toFloat(), 0f, 0f,
-                0f, Companion.LH2.toFloat(), Companion.LW.toFloat(), Companion.LH2.toFloat()
-            ),
-            floatArrayOf(
-                Companion.LW.toFloat(), Companion.LH.toFloat(), Companion.LW.toFloat(), 0f,  // nine
-                Companion.LW.toFloat(), 0f, 0f, 0f,
-                0f, 0f, 0f, Companion.LH2.toFloat(),
-                0f, Companion.LH2.toFloat(), Companion.LW.toFloat(), Companion.LH2.toFloat()
-            )
+        private val numbers = arrayOf(
+            floatArrayOf(0f, 0f, LW.toFloat(), 0f, LW.toFloat(), 0f, LW.toFloat(), LH.toFloat(), LW.toFloat(), LH.toFloat(), 0f, LH.toFloat(), 0f, LH.toFloat(), 0f, 0f),
+            floatArrayOf(LW.toFloat(), 0f, LW.toFloat(), LH.toFloat()),
+            floatArrayOf(0f, 0f, LW.toFloat(), 0f, LW.toFloat(), 0f, LW.toFloat(), LH2.toFloat(), LW.toFloat(), LH2.toFloat(), 0f, LH2.toFloat(), 0f, LH2.toFloat(), 0f, LH.toFloat(), 0f, LH.toFloat(), LW.toFloat(), LH.toFloat()),
+            floatArrayOf(0f, 0f, LW.toFloat(), 0f, LW.toFloat(), 0f, LW.toFloat(), LH2.toFloat(), LW.toFloat(), LH2.toFloat(), 0f, LH2.toFloat(), LW.toFloat(), LH2.toFloat(), LW.toFloat(), LH.toFloat(), LW.toFloat(), LH.toFloat(), 0f, LH.toFloat()),
+            floatArrayOf(0f, 0f, 0f, LH2.toFloat(), 0f, LH2.toFloat(), LW.toFloat(), LH2.toFloat(), LW.toFloat(), 0f, LW.toFloat(), LH.toFloat()),
+            floatArrayOf(LW.toFloat(), 0f, 0f, 0f, 0f, 0f, 0f, LH2.toFloat(), 0f, LH2.toFloat(), LW.toFloat(), LH2.toFloat(), LW.toFloat(), LH2.toFloat(), LW.toFloat(), LH.toFloat(), LW.toFloat(), LH.toFloat(), 0f, LH.toFloat()),
+            floatArrayOf(LW.toFloat(), 0f, 0f, 0f, 0f, 0f, 0f, LH.toFloat(), 0f, LH.toFloat(), LW.toFloat(), LH.toFloat(), LW.toFloat(), LH.toFloat(), LW.toFloat(), LH2.toFloat(), LW.toFloat(), LH2.toFloat(), 0f, LH2.toFloat()),
+            floatArrayOf(0f, 0f, LW.toFloat(), 0f, LW.toFloat(), 0f, LW.toFloat(), LH.toFloat()),
+            floatArrayOf(0f, 0f, LW.toFloat(), 0f, LW.toFloat(), 0f, LW.toFloat(), LH.toFloat(), LW.toFloat(), LH.toFloat(), 0f, LH.toFloat(), 0f, LH.toFloat(), 0f, 0f, 0f, LH2.toFloat(), LW.toFloat(), LH2.toFloat()),
+            floatArrayOf(LW.toFloat(), LH.toFloat(), LW.toFloat(), 0f, LW.toFloat(), 0f, 0f, 0f, 0f, 0f, 0f, LH2.toFloat(), 0f, LH2.toFloat(), LW.toFloat(), LH2.toFloat())
         )
 
         private val dashedLinePaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val linePaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val panelPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
-        private val textPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val gridPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
-        private val currentDate: Date = Date()
+        private var bgColor: Int = Color.BLACK
+        private var mainColor: Int = Color.WHITE
 
         init {
-            val isClassic = SharedPreferencesManager.classic == 1
-            val color = getColor()
+            updateColors()
+            dashedLinePaint.style = Paint.Style.STROKE
+            dashedLinePaint.strokeWidth = LINE_WIDTH.toFloat()
+            dashedLinePaint.pathEffect = DashPathEffect(floatArrayOf(20f, 20f), 0.0f)
+            gridPaint.strokeWidth = 1f
             
-            linePaint.color = color
-            linePaint.style = Paint.Style.STROKE
-            linePaint.strokeWidth = Companion.LINE_WIDTH.toFloat()
-            linePaint.strokeCap = if (isClassic) Cap.SQUARE else Cap.ROUND
-            if (!isClassic) {
-                linePaint.setShadowLayer(15f, 0f, 0f, color)
-            } else {
-                linePaint.clearShadowLayer()
+            val now = Date()
+            currentHours = now.hours
+            currentMinutes = now.minutes
+        }
+
+        private fun updateColors() {
+            val calendar = Calendar.getInstance()
+            val holiday = AppUtils.getHoliday(calendar)
+            val isHoliday = holiday != AppUtils.Companion.Holiday.None
+            
+            mainColor = getColorInternal()
+            val isClassic = SharedPreferencesManager.classic == 1 && !isHoliday
+            
+            val blackColor = context!!.getColor(R.color.black)
+            bgColor = if (isClassic) blackColor else context!!.getColor(R.color.modern_background)
+            if (isHoliday) {
+                bgColor = blackColor
             }
 
-            panelPaint.color = color
+            linePaint.color = mainColor
+            linePaint.style = Paint.Style.STROKE
+            linePaint.strokeWidth = LINE_WIDTH.toFloat()
+            linePaint.strokeCap = if (isClassic) Paint.Cap.SQUARE else Paint.Cap.ROUND
+            
+            panelPaint.color = mainColor
             panelPaint.style = if (isClassic) Paint.Style.STROKE else Paint.Style.FILL_AND_STROKE
-            panelPaint.strokeWidth = Companion.PANEL_LINE_WIDTH.toFloat()
-            panelPaint.strokeCap = if (isClassic) Cap.SQUARE else Cap.ROUND
-            if (!isClassic) {
-                panelPaint.setShadowLayer(15f, 0f, 0f, color)
+            panelPaint.strokeWidth = PANEL_LINE_WIDTH.toFloat()
+            panelPaint.strokeCap = if (isClassic) Paint.Cap.SQUARE else Paint.Cap.ROUND
+            
+            if (holiday == AppUtils.Companion.Holiday.Christmas) {
+                linePaint.color = context!!.getColor(R.color.christmas_red)
+                panelPaint.color = context!!.getColor(R.color.christmas_green)
+            } else if (holiday == AppUtils.Companion.Holiday.Halloween) {
+                linePaint.color = context!!.getColor(R.color.halloween_orange)
+                panelPaint.color = context!!.getColor(R.color.halloween_orange)
+            }
+
+            if (!isClassic || isHoliday) {
+                linePaint.setShadowLayer(25f, 0f, 0f, linePaint.color)
+                panelPaint.setShadowLayer(25f, 0f, 0f, panelPaint.color)
             } else {
+                linePaint.clearShadowLayer()
                 panelPaint.clearShadowLayer()
             }
 
-            dashedLinePaint.color = color
-            dashedLinePaint.style = Paint.Style.STROKE
-            dashedLinePaint.strokeWidth = Companion.LINE_WIDTH.toFloat()
-            val pe: PathEffect = DashPathEffect(floatArrayOf(20f, 20f), 0.0f)
-            dashedLinePaint.pathEffect = pe
+            dashedLinePaint.color = mainColor
             dashedLinePaint.alpha = if (isClassic) 255 else 100
-
-            textPaint.textSize = 30f
-            textPaint.color = context.getColor(R.color.white)
-            textPaint.alpha = 100
-            textPaint.typeface = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)
-
-            gridPaint.color = color
+            gridPaint.color = mainColor
             gridPaint.alpha = if (isClassic) 0 else 30
-            gridPaint.strokeWidth = 1f
-
-            lastTime = Date()
-            currentHours = lastTime.hours
-            currentMinutes = lastTime.minutes
-
-            mode = Companion.STATE_RUNNING
-            if (DEBUG) {
-                i(this.javaClass.name, "PongThread")
-            }
         }
 
         fun setSurfaceSize(width: Int, height: Int) {
-            // synchronized to make sure these all change atomically
             synchronized(surfaceHolder) {
                 canvasWidth = width
                 canvasHeight = height
-                canvasWidth2 = canvasWidth / 2
-                canvasHeight2 = canvasHeight / 2
-                playFieldY1 = 20
-                playFieldY2 = canvasHeight - 20
-                playFieldX1 = 10
-                playFieldX2 = canvasWidth - 10
+                canvasWidth2 = width / 2
+                canvasHeight2 = height / 2
+                playFieldY1 = (height * 0.05f).toInt().coerceAtMost(20)
+                playFieldY2 = height - playFieldY1
+                playFieldX1 = (width * 0.01f).toInt().coerceAtMost(10)
+                playFieldX2 = width - playFieldX1
+                panelXPos = (width * 0.05f).coerceAtMost(50f)
+                panelLength = (height * 0.1f).coerceAtMost(100f)
+                ballSpeed = width * 0.3f
+                panelSpeed = height * 0.25f
 
-                leftPanel =
-                    Panel(Companion.PANEL_XPOS, canvasHeight2)
-                rightPanel = Panel(
-                    canvasWidth - Companion.PANEL_XPOS,
-                    canvasHeight2
-                )
+                leftPanel = Panel(panelXPos.toInt(), canvasHeight2)
+                rightPanel = Panel((width - panelXPos).toInt(), canvasHeight2)
                 ball = Ball(canvasWidth2.toFloat(), canvasHeight2.toFloat())
 
-                number1X = canvasWidth2 - 320
-                number2X = canvasWidth2 - 140
-                number3X = canvasWidth2 + 60
-                number4X = canvasWidth2 + 240
+                numberScale = (width / 200f).coerceIn(3f, 8f)
+                val numWidth = LW * numberScale
+                val spacing = numWidth * 0.6f
+                val centerGap = numWidth * 1.5f
+                number2X = (canvasWidth2 - centerGap / 2 - numWidth).toInt()
+                number1X = (number2X - spacing - numWidth).toInt()
+                number3X = (canvasWidth2 + centerGap / 2).toInt()
+                number4X = (number3X + spacing + numWidth).toInt()
 
-                gMode = Companion.GSTATE_NONE
                 lastTimeMillis = System.currentTimeMillis()
                 nextTimeUpdate = (lastTimeMillis / 1000) * 1000
-
                 newGame(true)
                 setRunning(true)
-                mode = Companion.STATE_RUNNING
-                if (DEBUG) {
-                    i(this.javaClass.name, "setSurfaceSize")
-                }
             }
         }
 
-        fun toggleFPS() {
-            showFPS = !showFPS
-        }
-
-        fun setRunning(running: Boolean) {
-            this.running = running
-        }
+        fun setRunning(isRunning: Boolean) { running = isRunning }
 
         private fun newGame(left: Boolean) {
-            if (DEBUG) {
-                i(
-                    this.javaClass.name,
-                    "new game, left wins: $left"
-                )
-            }
-            ball!!.y = (Math.random() * (playFieldY2 - playFieldY1) + playFieldY1).toFloat()
-            ball!!.x = (if ((left)) canvasWidth2 - 40 else canvasWidth2 + 40).toFloat()
+            ball?.y = (Math.random() * (playFieldY2 - playFieldY1) + playFieldY1).toFloat()
+            ball?.x = (if (left) canvasWidth2 - 40 else canvasWidth2 + 40).toFloat()
             val d = (Math.random() * 0.8 - 0.4).toFloat()
-            ball!!.direction = if ((left)) 0.0f + d else Math.PI.toFloat() + d
-            ball!!.computeDir()
-
-            if (DEBUG) {
-                i(
-                    this.javaClass.name,
-                    "--> " + (if (left) "left" else "right") + " wins, new game: " + ball!!.x + " " + ball!!.y
-                )
-            }
+            ball?.direction = if (left) 0.0f + d else Math.PI.toFloat() + d
+            ball?.computeDir()
         }
 
         private fun doDraw(canvas: Canvas?) {
-            if(canvas != null){
-                val bgColor = if (SharedPreferencesManager.classic == 1) context.getColor(R.color.black) else context.getColor(R.color.modern_background)
-                canvas.drawColor(bgColor)
-                drawGrid(canvas)
-                if (showFPS) {
-                    canvas.drawText("FPS:$currentFPS", 50f, 50f, textPaint)
-                }
-                drawFieldAndPanels(canvas)
-                drawBall(canvas)
-                drawTime(canvas, currentHours, currentMinutes)
+            if (canvas == null) return
+            val holiday = AppUtils.getHoliday(Calendar.getInstance())
+            updateColors()
+
+            canvas.drawColor(bgColor)
+            if (holiday == AppUtils.Companion.Holiday.Christmas) {
+                canvas.drawColor(context!!.getColor(R.color.festive_overlay), PorterDuff.Mode.SRC_OVER)
             }
 
-        }
-
-        private fun drawGrid(canvas: Canvas) {
             val step = 100
-            for (x in 0..canvasWidth step step) {
-                canvas.drawLine(x.toFloat(), 0f, x.toFloat(), canvasHeight.toFloat(), gridPaint)
-            }
-            for (y in 0..canvasHeight step step) {
-                canvas.drawLine(0f, y.toFloat(), canvasWidth.toFloat(), y.toFloat(), gridPaint)
-            }
-        }
-
-        private fun drawBall(canvas: Canvas?) {
-            if (SharedPreferencesManager.classic == 1) {
-                canvas!!.drawRect(ball!!.x - 5, ball!!.y - 5, ball!!.x + 5, ball!!.y + 5, panelPaint)
+            for (x in 0..canvasWidth step step) canvas.drawLine(x.toFloat(), 0f, x.toFloat(), canvasHeight.toFloat(), gridPaint)
+            for (y in 0..canvasHeight step step) canvas.drawLine(0f, y.toFloat(), canvasWidth.toFloat(), y.toFloat(), gridPaint)
+            
+            canvas.drawLine(0f, 10f, canvasWidth.toFloat(), 10f, linePaint)
+            canvas.drawLine(0f, (canvasHeight - 10).toFloat(), canvasWidth.toFloat(), (canvasHeight - 10).toFloat(), linePaint)
+            canvas.drawLine(canvasWidth2.toFloat(), 0f, canvasWidth2.toFloat(), canvasHeight.toFloat(), dashedLinePaint)
+            
+            val lp = leftPanel!!
+            val rp = rightPanel!!
+            
+            if (holiday == AppUtils.Companion.Holiday.Halloween) {
+                val hP = Paint(panelPaint).apply { 
+                    style = Paint.Style.FILL
+                    color = context!!.getColor(R.color.halloween_orange)
+                    setShadowLayer(40f, 0f, 0f, color)
+                }
+                canvas.drawRect(lp.x - 20f, lp.y - panelLength, lp.x + 20f, lp.y + panelLength, hP)
+                canvas.drawRect(rp.x - 20f, rp.y - panelLength, rp.x + 20f, rp.y + panelLength, hP)
+            } else if (SharedPreferencesManager.classic == 1 && holiday == AppUtils.Companion.Holiday.None) {
+                canvas.drawLine(lp.x.toFloat(), lp.y - panelLength, lp.x.toFloat(), lp.y + panelLength, panelPaint)
+                canvas.drawLine(rp.x.toFloat(), rp.y - panelLength, rp.x.toFloat(), rp.y + panelLength, panelPaint)
             } else {
-                canvas!!.drawCircle(ball!!.x, ball!!.y, 10f, panelPaint)
+                canvas.drawRoundRect(RectF(lp.x - 10f, lp.y - panelLength * 1.5f, lp.x + 10f, lp.y + panelLength * 1.5f), 10f, 10f, panelPaint)
+                canvas.drawRoundRect(RectF(rp.x - 10f, rp.y - panelLength * 1.5f, rp.x + 10f, rp.y + panelLength * 1.5f), 10f, 10f, panelPaint)
             }
-        }
-
-        private fun drawTime(canvas: Canvas?, hours: Int, minutes: Int) {
-            val color = getColor()
-            linePaint.color = color
-            linePaint.setShadowLayer(20f, 0f, 0f, color)
             
-            drawNumber(canvas, number1X, hours / 10)
-            drawNumber(canvas, number2X, hours % 10)
-            drawNumber(canvas, number3X, minutes / 10)
-            drawNumber(canvas, number4X,  minutes % 10)
-        }
-
-        private fun drawNumber(canvas: Canvas?, x: Int, n: Int) {
-            canvas!!.withSave() {
-                canvas.translate(x.toFloat(), (canvasHeight / 2 - 100).toFloat()) // Center numbers vertically a bit more
-                canvas.scale(5f, 5f) // Much bigger numbers
-                canvas.drawLines(numbers[n], linePaint)
-            }
-        }
-
-        private fun drawFieldAndPanels(c: Canvas?) {
-            val color = getColor()
-            linePaint.color = color
-            panelPaint.color = color
-            
-            c!!.drawLine(0f, 10f, canvasWidth.toFloat(), 10f, linePaint)
-            c.drawLine(
-                0f,
-                (canvasHeight - 10).toFloat(),
-                canvasWidth.toFloat(),
-                (canvasHeight - 10).toFloat(),
-                linePaint
-            )
-            c.drawLine(
-                (canvasWidth / 2).toFloat(),
-                0f,
-                (canvasWidth / 2).toFloat(),
-                canvasHeight.toFloat(),
-                dashedLinePaint
-            )
-            
-            if (SharedPreferencesManager.classic == 1) {
-                c.drawLine(
-                    leftPanel!!.x.toFloat(),
-                    (leftPanel!!.y - Companion.PANEL_LENGTH).toFloat(),
-                    leftPanel!!.x.toFloat(),
-                    (leftPanel!!.y + Companion.PANEL_LENGTH).toFloat(),
-                    panelPaint
-                )
-                c.drawLine(
-                    rightPanel!!.x.toFloat(),
-                    (rightPanel!!.y - Companion.PANEL_LENGTH).toFloat(),
-                    rightPanel!!.x.toFloat(),
-                    (rightPanel!!.y + Companion.PANEL_LENGTH).toFloat(),
-                    panelPaint
-                )
-            } else {
-                val panelRectLeft = android.graphics.RectF(
-                    (leftPanel!!.x - 5).toFloat(),
-                    (leftPanel!!.y - Companion.PANEL_LENGTH * 2).toFloat(),
-                    (leftPanel!!.x + 5).toFloat(),
-                    (leftPanel!!.y + Companion.PANEL_LENGTH * 2).toFloat()
-                )
-                c.drawRoundRect(panelRectLeft, 5f, 5f, panelPaint)
-
-                val panelRectRight = android.graphics.RectF(
-                    (rightPanel!!.x - 5).toFloat(),
-                    (rightPanel!!.y - Companion.PANEL_LENGTH * 2).toFloat(),
-                    (rightPanel!!.x + 5).toFloat(),
-                    (rightPanel!!.y + Companion.PANEL_LENGTH * 2).toFloat()
-                )
-                c.drawRoundRect(panelRectRight, 5f, 5f, panelPaint)
-            }
-        }
-
-        private fun updatePhysics(now: Long, deltaMillis: Long) {
-            // update time
-
-            updateTime(now)
-
-            if (gMode == Companion.GSTATE_STOPPED || gMode == Companion.GSTATE_NONE) {
-                return
-            }
-
-            val distance = Companion.BALL_SPEED / (1000 / deltaMillis)
-            val dX = (distance * ball!!.cosDir)
-
-
-            // move panels only if neither is about to win
-            if (gMode != Companion.GSTATE_HOURSWIN) {
-                if ((dX > 0) && (ball!!.x > canvasWidth2)) {
-                    movePanel(rightPanel, ball!!.y.toInt(), deltaMillis)
-                } else {
-                    movePanel(rightPanel, canvasHeight2, deltaMillis)
+            val b = ball!!
+            when (holiday) {
+                AppUtils.Companion.Holiday.Halloween -> {
+                    val p = Paint(panelPaint).apply { color = context!!.getColor(R.color.halloween_orange); style = Paint.Style.FILL }
+                    canvas.drawCircle(b.x, b.y, 18f, p)
+                }
+                AppUtils.Companion.Holiday.Christmas -> {
+                    val p = Paint(panelPaint).apply { color = context!!.getColor(R.color.christmas_red); style = Paint.Style.FILL }
+                    canvas.drawCircle(b.x, b.y, 14f, p)
+                }
+                AppUtils.Companion.Holiday.NewYear -> {
+                    val p = Paint(panelPaint).apply { color = context!!.getColor(R.color.newyear_gold); style = Paint.Style.FILL }
+                    canvas.drawCircle(b.x, b.y, 18f, p)
+                }
+                else -> {
+                    if (SharedPreferencesManager.classic == 1) canvas.drawRect(b.x - 5, b.y - 5, b.x + 5, b.y + 5, panelPaint)
+                    else canvas.drawCircle(b.x, b.y, 10f, panelPaint)
                 }
             }
-            if (gMode != Companion.GSTATE_MINUTESWIN) {
-                if ((dX < 0) && (ball!!.x < canvasWidth2)) {
-                    movePanel(leftPanel, ball!!.y.toInt(), deltaMillis)
-                } else {
-                    movePanel(leftPanel, canvasHeight2, deltaMillis)
-                }
+            drawNum(canvas, number1X, currentHours / 10)
+            drawNum(canvas, number2X, currentHours % 10)
+            drawNum(canvas, number3X, currentMinutes / 10)
+            drawNum(canvas, number4X, currentMinutes % 10)
+        }
+
+        private fun drawNum(canvas: Canvas, x: Int, n: Int) {
+            canvas.withSave {
+                val numHeight = LH * numberScale
+                translate(x.toFloat(), canvasHeight2 - numHeight / 2)
+                scale(numberScale, numberScale)
+                drawLines(numbers[n], linePaint)
             }
+        }
 
-
-            // check if ball bounces at playfield (top and bottom)
-            ball!!.y += (distance * ball!!.sinDir)
-            if (ball!!.y < playFieldY1) {
-                ball!!.y = playFieldY1 + (playFieldY1 - ball!!.y)
-                ball!!.direction = -ball!!.direction
-                ball!!.computeDir()
-            } else if (ball!!.y > playFieldY2) {
-                ball!!.y = playFieldY2 - (ball!!.y - playFieldY2)
-                ball!!.direction = -ball!!.direction
-                ball!!.computeDir()
-            }
-
-
-            // check if ball bounces at panels
+        private fun updatePhysics(deltaMillis: Long) {
+            updateTime()
+            if (gMode == GSTATE_STOPPED || gMode == GSTATE_NONE) return
+            val distance = ballSpeed / (1000 / deltaMillis)
+            val dX = distance * ball!!.cosDir
+            if (gMode != GSTATE_HOURSWIN) movePanel(rightPanel!!, if (dX > 0 && ball!!.x > canvasWidth2) ball!!.y.toInt() else canvasHeight2, deltaMillis)
+            if (gMode != GSTATE_MINUTESWIN) movePanel(leftPanel!!, if (dX < 0 && ball!!.x < canvasWidth2) ball!!.y.toInt() else canvasHeight2, deltaMillis)
+            ball!!.y += distance * ball!!.sinDir
+            if (ball!!.y < playFieldY1) { ball!!.y = playFieldY1 + (playFieldY1 - ball!!.y); ball!!.direction = -ball!!.direction; ball!!.computeDir() }
+            else if (ball!!.y > playFieldY2) { ball!!.y = playFieldY2 - (ball!!.y - playFieldY2); ball!!.direction = -ball!!.direction; ball!!.computeDir() }
             ball!!.x += dX
-            if ((ball!!.x > rightPanel!!.x) &&
-                (ball!!.y > rightPanel!!.y - Companion.PANEL_LENGTH) &&
-                (ball!!.y < rightPanel!!.y + Companion.PANEL_LENGTH)
-            ) {
-                ball!!.x = rightPanel!!.x + (rightPanel!!.x - ball!!.x)
-                // try to keep the ball direction in between +/- 45 degrees
-                ball!!.direction =
-                    (-ball!!.direction + Math.PI + Math.random() * 0.6 - 0.3).toFloat()
-                ball!!.direction =
-                    if ((ball!!.direction > Companion.TWOPI)) ball!!.direction - Companion.TWOPI
-                    else if ((ball!!.direction < 0)) ball!!.direction +
-                            Companion.TWOPI else ball!!.direction
-                if (ball!!.direction < Companion.MIN_RANGLE) {
-                    ball!!.direction = Companion.MIN_RANGLE
-                } else if (ball!!.direction > Companion.MAX_RANGLE) {
-                    ball!!.direction = Companion.MAX_RANGLE
-                }
+            val rp = rightPanel!!
+            val lp = leftPanel!!
+            if (ball!!.x > rp.x && ball!!.y > rp.y - panelLength && ball!!.y < rp.y + panelLength) {
+                ball!!.x = rp.x + (rp.x - ball!!.x)
+                ball!!.direction = (-ball!!.direction + Math.PI + Math.random() * 0.6 - 0.3).toFloat()
+                ball!!.direction = ball!!.direction.coerceIn(MIN_RANGLE, MAX_RANGLE)
                 ball!!.computeDir()
-            } else if ((ball!!.x < leftPanel!!.x) &&
-                (ball!!.y > leftPanel!!.y - Companion.PANEL_LENGTH) &&
-                (ball!!.y < leftPanel!!.y + Companion.PANEL_LENGTH)
-            ) {
-                ball!!.x = leftPanel!!.x + (leftPanel!!.x - (ball!!.x))
-                ball!!.direction =
-                    -(ball!!.direction - Math.PI + Math.random() * 0.6 - 0.3).toFloat()
+            } else if (ball!!.x < lp.x && ball!!.y > lp.y - panelLength && ball!!.y < lp.y + panelLength) {
+                ball!!.x = lp.x + (lp.x - ball!!.x)
+                ball!!.direction = -(ball!!.direction - Math.PI.toFloat() + Math.random() * 0.6 - 0.3).toFloat()
                 ball!!.computeDir()
             }
-
-
-            // check if ball leaves the playfield.
-            if ((ball!!.x < playFieldX1) || (ball!!.x > playFieldX2)) {
-                newGame(gMode != Companion.GSTATE_MINUTESWIN)
-                if ((gMode == Companion.GSTATE_HOURSWIN) || (gMode == Companion.GSTATE_MINUTESWIN)) {
-                    if (DEBUG) {
-                        i(this.javaClass.name, "stopped")
-                    }
-                    gMode = Companion.GSTATE_STOPPED
-                } else if (DEBUG) {
-                    i(this.javaClass.name, "oops, we lose! " + ball!!.x)
-                }
+            if (ball!!.x < playFieldX1 || ball!!.x > playFieldX2) {
+                newGame(gMode != GSTATE_MINUTESWIN)
+                if (gMode == GSTATE_HOURSWIN || gMode == GSTATE_MINUTESWIN) gMode = GSTATE_STOPPED
             }
         }
 
-        private fun movePanel(p: Panel?, target: Int, deltaMillis: Long) {
-            val dPanel = target - p!!.y
-            if (abs(dPanel.toDouble()) > 6) {
-                val distance = (Companion.PANEL_SPEED / (1000 / deltaMillis)).toInt()
-                p.y += if ((dPanel > 0)) distance else -distance
+        private fun movePanel(p: Panel, target: Int, deltaMillis: Long) {
+            val dPanel = target - p.y
+            if (abs(dPanel) > 6) {
+                val dist = (panelSpeed / (1000 / deltaMillis)).toInt()
+                p.y += if (dPanel > 0) dist else -dist
             }
         }
 
-        private fun updateTime(now: Long) {
-            var now = now
-            now= System.currentTimeMillis()
+        private fun updateTime() {
+            val now = System.currentTimeMillis()
             if (now > nextTimeUpdate) {
                 nextTimeUpdate += 1000
-                currentDate.time = now
+                val date = Date(now)
                 when (gMode) {
-                    Companion.GSTATE_MINUTESWIN -> {}
-                    Companion.GSTATE_HOURSWIN -> {}
-                    Companion.GSTATE_PLAY -> if (currentHours != currentDate.hours) {
-                        gMode = Companion.GSTATE_HOURSWIN
-                        if (DEBUG) {
-                            i(this.javaClass.name, "hours!")
-                        }
-                    } else if (currentMinutes != currentDate.minutes) {
-                        gMode = Companion.GSTATE_MINUTESWIN
-                        if (DEBUG) {
-                            i(this.javaClass.name, "minutes!")
-                        }
-                    } else {
-                        currentHours = currentDate.hours
-                        currentMinutes = currentDate.minutes
-                    }
-
-                    Companion.GSTATE_STOPPED -> {
-                        waitCount++
-                        if (waitCount == 2) {
-                            gMode = Companion.GSTATE_PLAY
-                            waitCount = 0
-                        }
-                        currentHours = currentDate.hours
-                        currentMinutes = currentDate.minutes
-                        if (DEBUG) {
-                            i(this.javaClass.name, "play on")
-                        }
-                    }
-
-                    Companion.GSTATE_NONE -> {
-                        if (DEBUG) {
-                            i(this.javaClass.name, "waiting ...")
-                        }
-                        waitCount++
-                        if (waitCount >= 3) {
-                            gMode = Companion.GSTATE_PLAY
-                            waitCount = 0
-                        }
-                    }
-
-                    else -> {
-                        if (DEBUG) {
-                            i(
-                                this.javaClass.name,
-                                "ooops! $gMode"
-                            )
-                        }
-                        gMode = Companion.GSTATE_PLAY
-                    }
+                    GSTATE_PLAY -> if (currentHours != date.hours) gMode = GSTATE_HOURSWIN else if (currentMinutes != date.minutes) gMode = GSTATE_MINUTESWIN else { currentHours = date.hours; currentMinutes = date.minutes }
+                    GSTATE_STOPPED -> { waitCount++; if (waitCount == 2) { gMode = GSTATE_PLAY; waitCount = 0 }; currentHours = date.hours; currentMinutes = date.minutes }
+                    GSTATE_NONE -> { waitCount++; if (waitCount >= 3) { gMode = GSTATE_PLAY; waitCount = 0 } }
+                    else -> gMode = GSTATE_PLAY
                 }
             }
         }
 
         override fun run() {
-            var count = 0
-            var t1 = System.currentTimeMillis()
-            if (DEBUG) {
-                i(this.javaClass.name, "entering run")
-            }
+            var lastFrameTime = System.currentTimeMillis()
             while (running) {
-                var c: Canvas? = null
-                try {
-                    c = surfaceHolder.lockCanvas(null)
-                    if (mode == Companion.STATE_RUNNING) {
-                        count++
-                        val now = System.currentTimeMillis()
-                        val delta = now - lastTimeMillis
-                        updatePhysics(now, delta)
-                        lastTimeMillis = now
-
-                        if (now - t1 > 5000) {
-                            currentFPS = count / 5
-                            t1 = now
-                            count = 0
-                        }
-                        synchronized(surfaceHolder) {
+                val now = System.currentTimeMillis()
+                val delta = now - lastFrameTime
+                if (delta >= 16) {
+                    lastFrameTime = now
+                    var c: Canvas? = null
+                    try {
+                        c = surfaceHolder.lockCanvas()
+                        if (c != null) {
+                            updatePhysics(delta)
                             doDraw(c)
                         }
-                    }
-                } finally {
-                    // do this in a finally so that if an exception is thrown
-                    // during the above, we don't leave the Surface in an
-                    // inconsistent state
-                    if (c != null) {
-                        surfaceHolder.unlockCanvasAndPost(c)
-                    }
-                }
+                    } finally { c?.let { surfaceHolder.unlockCanvasAndPost(it) } }
+                } else try { sleep(2) } catch (e: InterruptedException) {}
             }
         }
+    }
 
-
-    } // PongThread
-
-    private fun getColor(): Int {
-        var color = context.getColor(R.color.modern_cyan)
-        if (SharedPreferencesManager.classic == 1) {
-            color = context.getColor(R.color.white)
-        } else if (SharedPreferencesManager.mode == 1) {
-            color = context.getColor(R.color.matrix)
-        } else if (SharedPreferencesManager.season == 1) {
-            val calendar = Calendar.getInstance()
-            val currentDayOfYear = calendar[Calendar.DAY_OF_YEAR]
-            color = context.getColor(AppUtils.getSeason(currentDayOfYear).toColor())
+    private fun getColorInternal(): Int {
+        val calendar = Calendar.getInstance()
+        val holiday = AppUtils.getHoliday(calendar)
+        if (holiday != AppUtils.Companion.Holiday.None) {
+            return when (holiday) {
+                AppUtils.Companion.Holiday.Halloween -> context.getColor(R.color.halloween_orange)
+                AppUtils.Companion.Holiday.Christmas -> context.getColor(R.color.christmas_red)
+                AppUtils.Companion.Holiday.NewYear -> context.getColor(R.color.newyear_gold)
+                else -> context.getColor(R.color.white)
+            }
         }
+        var color = context.getColor(R.color.modern_cyan)
+        if (SharedPreferencesManager.classic == 1) color = context.getColor(R.color.white)
+        else if (SharedPreferencesManager.mode == 1) color = context.getColor(R.color.matrix)
+        else if (SharedPreferencesManager.season == 1) color = context.getColor(AppUtils.getSeason(calendar[Calendar.DAY_OF_YEAR]).toColor())
         return color
     }
 
-
     init {
-        // register our interest in hearing about changes to our surface
-        val holder = holder
         holder.addCallback(this)
-
-        // create thread only; it's started in surfaceCreated()
-        thread = PongThread(holder)
-        isFocusable = true // make sure we get key events
+        isFocusable = false
+        isClickable = false
     }
 
-    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        thread.setSurfaceSize(width, height)
-    }
-
-    override fun surfaceCreated(holder: SurfaceHolder) {
-        // start the thread here so that we don't busy-wait in run()
-        // waiting for the surface to be created
-        if (DEBUG) {
-            i(this.javaClass.name, "surfaceCreated")
-        }
-        thread.setRunning(true)
-        thread.start()
-    }
-
-    override fun surfaceDestroyed(holder: SurfaceHolder) {
-        // we have to tell thread to shut down & wait for it to finish, or else
-        // it might touch the Surface after we return and explode
+    override fun surfaceChanged(h: SurfaceHolder, f: Int, w: Int, height: Int) { thread?.setSurfaceSize(w, height) }
+    override fun surfaceCreated(h: SurfaceHolder) { thread = PongThread(h); thread?.start() }
+    override fun surfaceDestroyed(h: SurfaceHolder) {
+        thread?.setRunning(false)
         var retry = true
-        thread.setRunning(false)
-        while (retry) {
-            try {
-                thread.join()
-                retry = false
-            } catch (e: InterruptedException) {
-                e.message?.let { e(Throwable(e), it) }
-            }
-        }
+        while (retry) { try { thread?.join(); retry = false } catch (e: InterruptedException) {} }
     }
 
     companion object {
-        const val STATE_PAUSE: Int = 1
-        const val STATE_RUNNING: Int = 2
-        const val DEBUG: Boolean = false
-
-        const val GSTATE_NONE: Int = 0
-        const val GSTATE_HOURSWIN: Int = 1
-        const val GSTATE_MINUTESWIN: Int = 2
-        const val GSTATE_PLAY: Int = 3
-        const val GSTATE_STOPPED: Int = 4
-
-        private const val NUMBER_Y = 50
-
-        private const val BALL_SPEED = 300.0f // pixels per second
-        private const val PANEL_SPEED = 250.0f // pixels per second
-        private const val PANEL_LENGTH = 20
-        private const val PANEL_XPOS = 25
-        private const val TWOPI = (Math.PI * 2).toFloat()
-        private const val MIN_RANGLE = (3 * (Math.PI / 4)).toFloat()
-        private const val MAX_RANGLE = (5 * (Math.PI / 4)).toFloat()
-
-        private const val LINE_WIDTH = 7 // line width to draw the playfield
-        private const val PANEL_LINE_WIDTH = 9 // line width to draw the panels
-        private const val LW = 15 // letter width
-        private const val LH = 26 // letter height
-        private const val LH2 = LH / 2
-        private const val SP = LW + 15 // letter width + space
+        const val GSTATE_NONE = 0
+        const val GSTATE_HOURSWIN = 1
+        const val GSTATE_MINUTESWIN = 2
+        const val GSTATE_PLAY = 3
+        const val GSTATE_STOPPED = 4
+        const val LW = 15
+        const val LH = 26
+        const val LH2 = LH / 2
+        const val LINE_WIDTH = 7
+        const val PANEL_LINE_WIDTH = 9
+        const val MIN_RANGLE = (3 * (Math.PI / 4)).toFloat()
+        const val MAX_RANGLE = (5 * (Math.PI / 4)).toFloat()
     }
 }
-
-

@@ -11,7 +11,7 @@ import rpt.tool.pongclock.utils.Inflate
 
 abstract class BaseFragment<VB : ViewBinding>(private val inflate: Inflate<VB>) : Fragment() {
 
-    private var _binding: VB? = null
+    var _binding: VB? = null
     protected val binding get() = _binding!!
 
 

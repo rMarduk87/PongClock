@@ -6,14 +6,11 @@ import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import rpt.tool.pongclock.BaseFragment
-import kotlin.math.max
 import rpt.tool.pongclock.databinding.FragmentSettingsBinding
 import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
 import rpt.tool.pongclock.utils.navigation.safeNavController
-import rpt.tool.pongclock.utils.navigation.safeNavigate
+import kotlin.math.max
 
-
-@Suppress("DEPRECATION")
 class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsBinding::inflate) {
 
     @SuppressLint("SetTextI18n")
@@ -24,7 +21,6 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
             
-            // Combine system bars and display cutout insets
             val left = max(systemBars.left, displayCutout.left)
             val right = max(systemBars.right, displayCutout.right)
             val top = systemBars.top
@@ -34,7 +30,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
             insets
         }
 
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        binding.toolbar.setNavigationOnClickListener { safeNavController?.popBackStack() }
 
         updateSwitches()
 
@@ -103,14 +99,5 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
         binding.switchMatrixMode.isChecked = SharedPreferencesManager.mode == 1
         binding.switchSeasonMode.isChecked = SharedPreferencesManager.season == 1
         binding.switchBreakoutMode.isChecked = SharedPreferencesManager.breakOut == 1
-    }
-
-    private fun finish() {
-        val action = if (SharedPreferencesManager.breakOut == 1) {
-            SettingsFragmentDirections.actionSettingsFragmentToBreakOutClockFragment()
-        } else {
-            SettingsFragmentDirections.actionSettingsFragmentToClockFragment()
-        }
-        safeNavController?.safeNavigate(action)
     }
 }

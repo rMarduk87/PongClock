@@ -8,4 +8,18 @@
     <string name="classic_mode">クラシックモード</string>
     <string name="futuristic_mode">フューチャリスティックモード</string>
     <string name="score">スコア:</string>
+    <string name="clock">クロック</string>
+    <string name="halloween">ハロウィン</string>
+    <string name="christmas">メリークリスマス</string>
+    <string name="new_year">あけましておめでとう</string>
+    <string name="classic_title">ポンメニュー</string>
+    <string name="matrix_title">マトリックス</string>
+    <string name="breakout_title">ブレイクアウト</string>
+    <string name="spring_mode">春</string>
+    <string name="summer_mode">夏</string>
+    <string name="fall_mode">秋</string>
+    <string name="winter_mode">冬</string>
+    <string name="opening_clock">クロックを開いています…</string>
+    <string name="opening_settings">設定を開いています…</string>
+    <string name="nav_failed">ナビゲーションに失敗しました</string>
 </resources>

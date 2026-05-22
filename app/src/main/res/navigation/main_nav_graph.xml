@@ -1,39 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/main_nav_graph.xml"
-    app:startDestination="@id/clockFragment">
+    android:id="@+id/main_nav_graph"
+    app:startDestination="@id/menuFragment">
+
+    <fragment
+        android:id="@+id/menuFragment"
+        android:name="rpt.tool.pongclock.ui.menu.MenuFragment"
+        android:label="MenuFragment">
+        <action
+            android:id="@+id/action_menuFragment_to_clockFragment"
+            app:destination="@id/clockFragment" />
+        <action
+            android:id="@+id/action_menuFragment_to_breakOutClockFragment"
+            app:destination="@id/breakOutClockFragment" />
+        <action
+            android:id="@+id/action_menuFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/clockFragment"
         android:name="rpt.tool.pongclock.ui.clock.ClockFragment"
-        android:label="ClockFragment">
-        <action
-            android:id="@+id/action_clockFragment_to_settingsFragment"
-            app:destination="@id/settingsFragment" />
-        <action
-            android:id="@+id/action_clockFragment_to_breakOutClockFragment"
-            app:destination="@id/breakOutClockFragment" />
-    </fragment>
+        android:label="ClockFragment" />
 
     <fragment
         android:id="@+id/breakOutClockFragment"
         android:name="rpt.tool.pongclock.ui.breakout.BreakOutClockFragment"
-        android:label="BreakOutClockFragment">
-        <action
-            android:id="@+id/action_breakOutClockFragment_to_settingsFragment"
-            app:destination="@id/settingsFragment" />
-    </fragment>
+        android:label="BreakOutClockFragment" />
 
     <fragment
         android:id="@+id/settingsFragment"
         android:name="rpt.tool.pongclock.ui.settings.SettingsFragment"
-        android:label="SettingsFragment">
-        <action
-            android:id="@+id/action_settingsFragment_to_clockFragment"
-            app:destination="@id/clockFragment" />
-        <action
-            android:id="@+id/action_settingsFragment_to_breakOutClockFragment"
-            app:destination="@id/breakOutClockFragment" />
-    </fragment>
+        android:label="SettingsFragment" />
 </navigation>
