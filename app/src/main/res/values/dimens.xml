@@ -6,4 +6,5 @@
     <dimen name="common_circle_width">3dp</dimen>
     <dimen name="progress_circle_radius">34dp</dimen>
     <dimen name="recycler_view_item_icon_sizexxl">128dp</dimen>
+    <dimen name="breakout_score_text_size">48sp</dimen>
 </resources>

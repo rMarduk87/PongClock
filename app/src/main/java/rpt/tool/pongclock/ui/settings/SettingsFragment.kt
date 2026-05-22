@@ -6,14 +6,11 @@ import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import rpt.tool.pongclock.BaseFragment
-import kotlin.math.max
 import rpt.tool.pongclock.databinding.FragmentSettingsBinding
 import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
 import rpt.tool.pongclock.utils.navigation.safeNavController
-import rpt.tool.pongclock.utils.navigation.safeNavigate
+import kotlin.math.max
 
-
-@Suppress("DEPRECATION")
 class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsBinding::inflate) {
 
     @SuppressLint("SetTextI18n")
@@ -24,7 +21,6 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
             
-            // Combine system bars and display cutout insets
             val left = max(systemBars.left, displayCutout.left)
             val right = max(systemBars.right, displayCutout.right)
             val top = systemBars.top
@@ -34,11 +30,12 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
             insets
         }
 
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        binding.toolbar.setNavigationOnClickListener { safeNavController?.popBackStack() }
 
         updateSwitches()
 
         binding.switchClassicMode.setOnCheckedChangeListener { _, isChecked ->
+            if (_binding == null) return@setOnCheckedChangeListener
             if (isChecked) {
                 disableAll()
                 SharedPreferencesManager.classic = 1
@@ -49,6 +46,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
         }
 
         binding.switchFuturisticMode.setOnCheckedChangeListener { _, isChecked ->
+            if (_binding == null) return@setOnCheckedChangeListener
             if (isChecked) {
                 disableAll()
                 SharedPreferencesManager.futuristic = 1
@@ -59,6 +57,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
         }
 
         binding.switchMatrixMode.setOnCheckedChangeListener { _, isChecked ->
+            if (_binding == null) return@setOnCheckedChangeListener
             if (isChecked) {
                 disableAll()
                 SharedPreferencesManager.mode = 1
@@ -69,6 +68,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
         }
 
         binding.switchSeasonMode.setOnCheckedChangeListener { _, isChecked ->
+            if (_binding == null) return@setOnCheckedChangeListener
             if (isChecked) {
                 disableAll()
                 SharedPreferencesManager.season = 1
@@ -79,6 +79,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
         }
 
         binding.switchBreakoutMode.setOnCheckedChangeListener { _, isChecked ->
+            if (_binding == null) return@setOnCheckedChangeListener
             if (isChecked) {
                 disableAll()
                 SharedPreferencesManager.breakOut = 1
@@ -98,19 +99,24 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
     }
 
     private fun updateSwitches() {
-        binding.switchClassicMode.isChecked = SharedPreferencesManager.classic == 1
-        binding.switchFuturisticMode.isChecked = SharedPreferencesManager.futuristic == 1
-        binding.switchMatrixMode.isChecked = SharedPreferencesManager.mode == 1
-        binding.switchSeasonMode.isChecked = SharedPreferencesManager.season == 1
-        binding.switchBreakoutMode.isChecked = SharedPreferencesManager.breakOut == 1
+        _binding?.let {
+            it.switchClassicMode.isChecked = SharedPreferencesManager.classic == 1
+            it.switchFuturisticMode.isChecked = SharedPreferencesManager.futuristic == 1
+            it.switchMatrixMode.isChecked = SharedPreferencesManager.mode == 1
+            it.switchSeasonMode.isChecked = SharedPreferencesManager.season == 1
+            it.switchBreakoutMode.isChecked = SharedPreferencesManager.breakOut == 1
+        }
     }
 
-    private fun finish() {
-        val action = if (SharedPreferencesManager.breakOut == 1) {
-            SettingsFragmentDirections.actionSettingsFragmentToBreakOutClockFragment()
-        } else {
-            SettingsFragmentDirections.actionSettingsFragmentToClockFragment()
+    override fun onDestroyView() {
+        // Clear listeners to avoid callbacks during/after destruction
+        _binding?.let {
+            it.switchClassicMode.setOnCheckedChangeListener(null)
+            it.switchFuturisticMode.setOnCheckedChangeListener(null)
+            it.switchMatrixMode.setOnCheckedChangeListener(null)
+            it.switchSeasonMode.setOnCheckedChangeListener(null)
+            it.switchBreakoutMode.setOnCheckedChangeListener(null)
         }
-        safeNavController?.safeNavigate(action)
+        super.onDestroyView()
     }
 }

@@ -1,0 +1,3 @@
+<resources>
+    <dimen name="breakout_score_text_size">32sp</dimen>
+</resources>
