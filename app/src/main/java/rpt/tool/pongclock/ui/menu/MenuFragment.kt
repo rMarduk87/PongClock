@@ -37,9 +37,12 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
 
         binding.btnClock.setOnClickListener {
             val holiday = AppUtils.getHoliday(Calendar.getInstance())
+            
+            val isBreakout = SharedPreferencesManager.breakOut == 1
+
             val action = if (holiday != AppUtils.Companion.Holiday.None) {
                 MenuFragmentDirections.actionMenuFragmentToClockFragment()
-            } else if (SharedPreferencesManager.breakOut == 1) {
+            } else if (isBreakout) {
                 MenuFragmentDirections.actionMenuFragmentToBreakOutClockFragment()
             } else {
                 MenuFragmentDirections.actionMenuFragmentToClockFragment()
@@ -74,10 +77,13 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
         val calendar = Calendar.getInstance()
         val holiday = AppUtils.getHoliday(calendar)
 
-        val isClassic = SharedPreferencesManager.classic == 1
         val isMatrix = SharedPreferencesManager.mode == 1
         val isSeason = SharedPreferencesManager.season == 1
         val isBreakout = SharedPreferencesManager.breakOut == 1
+        val isFuturistic = SharedPreferencesManager.futuristic == 1
+        
+        // Classic è il default se niente altro è selezionato e non è futuristico
+        val isClassic = SharedPreferencesManager.classic == 1 || (!isMatrix && !isSeason && !isBreakout && !isFuturistic)
 
         val white = context.getColor(R.color.white)
 
@@ -163,6 +169,7 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
                 styleButton(binding.btnSettings, seasonColor, true, cornerRadius = 32)
             }
             else -> {
+                // Stile Moderno/Futuristico
                 val cyan = context.getColor(R.color.modern_cyan)
                 binding.root.setBackgroundColor(context.getColor(R.color.modern_bg))
                 binding.title.setTextColor(cyan)

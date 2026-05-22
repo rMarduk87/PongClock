@@ -2,21 +2,25 @@ package rpt.tool.pongclock.utils.view
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.view.View
+import rpt.tool.pongclock.R
 import kotlin.math.hypot
 import kotlin.random.Random
 
 class FuturisticEffectView(context: Context) : View(context) {
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.CYAN }
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { 
+        color = context.getColor(R.color.cyan) 
+    }
     private val nodes = List(40) { Node() }
     private var isInit = false
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        if (!isInit) { nodes.forEach { it.init(width.toFloat(), height.toFloat()) }
-            isInit = true }
+        if (!isInit) { 
+            nodes.forEach { it.init(width.toFloat(), height.toFloat()) }
+            isInit = true 
+        }
 
         nodes.forEach { node ->
             node.update(width.toFloat(), height.toFloat())

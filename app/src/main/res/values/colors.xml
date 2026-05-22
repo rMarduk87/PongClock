@@ -19,6 +19,9 @@
     <color name="yellow">#FFFF00</color>
     <color name="cyan">#00FFFF</color>
     <color name="magenta">#FF00FF</color>
+    <color name="red">#FF0000</color>
+    <color name="blue">#0000FF</color>
+    <color name="orange">#FFA500</color>
 
     <!-- Modern UI Colors -->
     <color name="modern_background">#121212</color>
@@ -59,4 +62,5 @@
 
     <color name="festive_overlay">#5000FF00</color>
     <color name="matrix_dim_bg">#28000000</color>
+    <color name="transparent">#00000000</color>
 </resources>

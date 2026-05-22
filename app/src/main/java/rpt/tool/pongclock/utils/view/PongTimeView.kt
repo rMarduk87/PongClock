@@ -19,7 +19,6 @@ import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
-import androidx.core.graphics.toColorInt
 
 class PongTimeView(context: Context?, attrs: AttributeSet?) :
     SurfaceView(context, attrs), SurfaceHolder.Callback {
@@ -42,7 +41,7 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
         var x: Float, var y: Float,
         var dx: Float, var dy: Float,
         var life: Float, var maxLife: Float,
-        val type: Int, val extra: String = "", val color: Int = Color.WHITE
+        val type: Int, val extra: String = "", val color: Int
     )
 
     inner class PongThread(private val surfaceHolder: SurfaceHolder) : Thread() {
@@ -91,8 +90,8 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
             Paint.Align.CENTER }
         private val particlePaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
-        private var bgColor: Int = Color.BLACK
-        private var mainColor: Int = Color.WHITE
+        private var bgColor: Int = 0
+        private var mainColor: Int = 0
 
         private val calendar = Calendar.getInstance()
         private val date = Date()
@@ -134,6 +133,11 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
             date.time = now
             currentHours = date.hours
             currentMinutes = date.minutes
+            
+            context?.let { ctx ->
+                bgColor = ctx.getColor(R.color.black)
+                mainColor = ctx.getColor(R.color.white)
+            }
             updateThemeAndColors()
         }
 
@@ -143,16 +147,20 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
 
             holiday = AppUtils.getHoliday(calendar)
             currentSeason = AppUtils.getSeason(calendar[Calendar.DAY_OF_YEAR])
-            isClassic = SharedPreferencesManager.classic == 1 && holiday ==
-                    AppUtils.Companion.Holiday.None
+            
             isMatrix = SharedPreferencesManager.mode == 1
             isBreakout = SharedPreferencesManager.breakOut == 1
             isSeason = SharedPreferencesManager.season == 1
+            val isFuturistic = SharedPreferencesManager.futuristic == 1
+            
+            // Classic è il default
+            isClassic = (SharedPreferencesManager.classic == 1 || (!isMatrix && !isBreakout && !isSeason && !isFuturistic)) && holiday ==
+                    AppUtils.Companion.Holiday.None
 
             mainColor = getColorInternal(ctx, calendar)
             bgColor = if (isClassic || holiday != AppUtils.Companion.Holiday.None)
                 ctx.getColor(R.color.black) else ctx.getColor(R.color.modern_background)
-            if (holiday == AppUtils.Companion.Holiday.Halloween) bgColor = "#0a0000".toColorInt()
+            if (holiday == AppUtils.Companion.Holiday.Halloween) bgColor = ctx.getColor(R.color.halloween_bg)
 
             linePaint.color = mainColor
             linePaint.style = Paint.Style.STROKE
@@ -290,9 +298,10 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
         }
 
         private fun onPaddleHit(x: Float, y: Float) {
+            val ctx = context ?: return
             if (holiday == AppUtils.Companion.Holiday.NewYear) {
-                val sparkColor = listOf(Color.YELLOW, Color.WHITE, context?.getColor(
-                    R.color.newyear_gold) ?: Color.YELLOW).random()
+                val sparkColor = listOf(ctx.getColor(R.color.yellow), ctx.getColor(R.color.white), ctx.getColor(
+                    R.color.newyear_gold)).random()
                 for (i in 0..15) {
                     particles.add(FxParticle(x, y, (Random.nextFloat() - 0.5f) * 10f,
                         (Random.nextFloat() - 0.5f) * 10f, 1f, 1f, 3,
@@ -302,19 +311,20 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
         }
 
         private fun updateParticles() {
+            val ctx = context ?: return
             if (holiday == AppUtils.Companion.Holiday.Halloween && Random.nextFloat() < 0.02f) {
                 particles.add(FxParticle(Random.nextFloat() * canvasWidth, canvasHeight +
                         50f, 0f, -Random.nextFloat() * 3 - 1f, 1f, 1f,
-                    4, listOf("🦇", "👻").random()))
+                    4, listOf("🦇", "👻").random(), ctx.getColor(R.color.white)))
             } else if (isSeason && currentSeason == AppUtils.Companion.Season.Winter &&
                 Random.nextFloat() < 0.1f) {
                 particles.add(FxParticle(Random.nextFloat() * canvasWidth, -10f,
                     Random.nextFloat() * 2 - 1f, Random.nextFloat() * 4 + 2f, 1f,
-                    1f, 1))
+                    1f, 1, "", ctx.getColor(R.color.white)))
             } else if (isMatrix && Random.nextFloat() < 0.05f) {
                 particles.add(FxParticle(Random.nextFloat() * canvasWidth, -10f, 0f,
                     Random.nextFloat() * 10 + 5f, 1f, 1f, 2,
-                    "01".random().toString()))
+                    "01".random().toString(), ctx.getColor(R.color.matrix)))
             }
 
             // Aggiorna ciclo vitale
@@ -357,6 +367,7 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
 
         private fun doDraw(canvas: Canvas?) {
             if (canvas == null) return
+            val ctx = context ?: return
             canvas.drawColor(bgColor)
 
             if (!isClassic && !isBreakout) {
@@ -368,10 +379,9 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
             }
             particles.forEach { p ->
                 when (p.type) {
-                    1 -> { particlePaint.color = Color.WHITE; canvas.drawCircle(p.x,
+                    1 -> { particlePaint.color = ctx.getColor(R.color.white); canvas.drawCircle(p.x,
                         p.y, 4f, particlePaint) }
-                    2 -> { particlePaint.color = context?.getColor(R.color.matrix) ?:
-                    Color.GREEN; particlePaint.textSize = 30f; canvas.drawText(p.extra, p.x,
+                    2 -> { particlePaint.color = ctx.getColor(R.color.matrix); particlePaint.textSize = 30f; canvas.drawText(p.extra, p.x,
                         p.y, particlePaint) }
                     3 -> { particlePaint.color = p.color; particlePaint.alpha = (p.life * 255)
                         .toInt().coerceIn(0, 255); canvas.drawCircle(p.x, p.y, 5f,
@@ -384,8 +394,13 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
 
             if (isBreakout) {
                 val brickWidth = canvasWidth / 12f
-                val brickColors = listOf(Color.RED, Color.parseColor("#FFA500"),
-                    Color.YELLOW, Color.GREEN, Color.CYAN)
+                val brickColors = listOf(
+                    ctx.getColor(R.color.red),
+                    ctx.getColor(R.color.orange),
+                    ctx.getColor(R.color.yellow),
+                    ctx.getColor(R.color.green),
+                    ctx.getColor(R.color.cyan)
+                )
                 for (i in 0..12) {
                     panelPaint.color = brickColors[i % brickColors.size]
                     canvas.drawRoundRect(i * brickWidth + 2, 5f, (i + 1) *
@@ -414,8 +429,8 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                 canvas.drawLine(rp.x.toFloat(), rp.y - panelLength,
                     rp.x.toFloat(), rp.y + panelLength, panelPaint)
             } else if (isBreakout) {
-                val lColor = context?.getColor(R.color.brick_blue) ?: Color.BLUE
-                val rColor = context?.getColor(R.color.brick_red) ?: Color.RED
+                val lColor = ctx.getColor(R.color.brick_blue)
+                val rColor = ctx.getColor(R.color.brick_red)
                 panelPaint.color = lColor
                 canvas.drawRoundRect(RectF(lp.x - 12f, lp.y - panelLength * 1.5f,
                     lp.x + 12f, lp.y + panelLength * 1.5f), 12f, 12f,
@@ -452,12 +467,12 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                     canvas.drawText("🎃", b.x, b.y + (emojiPaint.textSize / 3), emojiPaint)
                 }
                 holiday == AppUtils.Companion.Holiday.NewYear -> {
-                    panelPaint.color = context?.getColor(R.color.newyear_gold) ?: Color.YELLOW
+                    panelPaint.color = ctx.getColor(R.color.newyear_gold)
                     canvas.drawCircle(b.x, b.y, 18f, panelPaint)
                     panelPaint.color = mainColor
                 }
                 isBreakout -> {
-                    panelPaint.color = Color.WHITE
+                    panelPaint.color = ctx.getColor(R.color.white)
                     canvas.drawCircle(b.x, b.y, 14f, panelPaint)
                     panelPaint.color = mainColor
                 }
@@ -511,11 +526,19 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                 else -> ctx.getColor(R.color.white)
             }
         }
-        var color = ctx.getColor(R.color.modern_cyan)
-        if (SharedPreferencesManager.classic == 1) color = ctx.getColor(R.color.white)
-        else if (SharedPreferencesManager.mode == 1) color = ctx.getColor(R.color.matrix)
-        else if (SharedPreferencesManager.season == 1) color = ctx.getColor(
-            AppUtils.getSeason(calendar[Calendar.DAY_OF_YEAR]).toColor())
+        
+        val isMatrix = SharedPreferencesManager.mode == 1
+        val isSeason = SharedPreferencesManager.season == 1
+        val isBreakout = SharedPreferencesManager.breakOut == 1
+        val isFuturistic = SharedPreferencesManager.futuristic == 1
+        val isClassic = SharedPreferencesManager.classic == 1 || (!isMatrix && !isSeason && !isBreakout && !isFuturistic)
+
+        var color = ctx.getColor(R.color.white) // Classic default
+        if (isClassic) color = ctx.getColor(R.color.white)
+        else if (isMatrix) color = ctx.getColor(R.color.matrix)
+        else if (isSeason) color = ctx.getColor(AppUtils.getSeason(calendar[Calendar.DAY_OF_YEAR]).toColor())
+        else if (isFuturistic) color = ctx.getColor(R.color.modern_cyan)
+
         return color
     }
 

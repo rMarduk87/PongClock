@@ -74,7 +74,13 @@ class BreakOutTimeView(context: Context?, attrs: AttributeSet?) :
         private var mainColor: Int = Color.WHITE
         private val calendar = Calendar.getInstance()
 
-        init { updateColors() }
+        init { 
+            context?.let { ctx ->
+                bgColor = ctx.getColor(R.color.black)
+                mainColor = ctx.getColor(R.color.white)
+            }
+            updateColors() 
+        }
 
         private fun updateColors() {
             val ctx = context ?: return
