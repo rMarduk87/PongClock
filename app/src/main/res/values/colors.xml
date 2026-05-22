@@ -15,6 +15,13 @@
     <color name="winter">#d6fffb</color>
     <color name="colorSkyBlue">#03BBFF</color>
     <color name="overlay">#BF000000</color>
+    <color name="green">#00FF00</color>
+    <color name="yellow">#FFFF00</color>
+    <color name="cyan">#00FFFF</color>
+    <color name="magenta">#FF00FF</color>
+    <color name="red">#FF0000</color>
+    <color name="blue">#0000FF</color>
+    <color name="orange">#FFA500</color>
 
     <!-- Modern UI Colors -->
     <color name="modern_background">#121212</color>
@@ -27,4 +34,33 @@
     <color name="brick_blue">#40C4FF</color>
     <color name="brick_purple">#7C4DFF</color>
     <color name="brick_pink">#FF4081</color>
+
+    <!-- Holiday Colors -->
+    <color name="halloween_orange">#FF9800</color>
+    <color name="christmas_red">#D32F2F</color>
+    <color name="christmas_green">#388E3C</color>
+    <color name="newyear_gold">#FFD700</color>
+
+    <!-- Menu Theme Colors -->
+    <color name="christmas_bg">#0A2A0A</color>
+    <color name="newyear_bg">#1A1A1A</color>
+    <color name="breakout_bg">#0A0A0A</color>
+    <color name="menu_divider">#333333</color>
+    <color name="card_stroke">#444444</color>
+    <color name="card_bg">#1A1A1A</color>
+    <color name="classic_bg">#000000</color>
+    <color name="matrix_bg">#000000</color>
+    <color name="modern_bg">#121212</color>
+    <color name="halloween_bg">#0a0000</color>
+    <color name="halloween_shadow">#FF4500</color>
+    <color name="christmas_shadow">#FFFF00</color>
+
+    <!-- Particle Colors -->
+    <color name="spring_particle">#FFB7C5</color>
+    <color name="fall_leaf_1">#D2691E</color>
+    <color name="fall_leaf_2">#8B4513</color>
+
+    <color name="festive_overlay">#5000FF00</color>
+    <color name="matrix_dim_bg">#28000000</color>
+    <color name="transparent">#00000000</color>
 </resources>
