@@ -161,6 +161,7 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
             bgColor = if (isClassic || holiday != AppUtils.Companion.Holiday.None)
                 ctx.getColor(R.color.black) else ctx.getColor(R.color.modern_background)
             if (holiday == AppUtils.Companion.Holiday.Halloween) bgColor = ctx.getColor(R.color.halloween_bg)
+            if (holiday == AppUtils.Companion.Holiday.WorldCup2026) bgColor = ctx.getColor(R.color.worldcup_bg)
 
             linePaint.color = mainColor
             linePaint.style = Paint.Style.STROKE
@@ -178,6 +179,9 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
             } else if (holiday == AppUtils.Companion.Holiday.Halloween) {
                 linePaint.color = ctx.getColor(R.color.halloween_orange)
                 panelPaint.color = ctx.getColor(R.color.halloween_orange)
+            } else if (holiday == AppUtils.Companion.Holiday.WorldCup2026) {
+                linePaint.color = ctx.getColor(R.color.white)
+                panelPaint.color = ctx.getColor(R.color.worldcup_gold)
             }
 
             if (!isClassic) {
@@ -306,6 +310,13 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                     particles.add(FxParticle(x, y, (Random.nextFloat() - 0.5f) * 10f,
                         (Random.nextFloat() - 0.5f) * 10f, 1f, 1f, 3,
                         "", sparkColor))
+                }
+            } else if (holiday == AppUtils.Companion.Holiday.WorldCup2026) {
+                val grassColor = listOf(ctx.getColor(R.color.green), ctx.getColor(R.color.worldcup_pitch)).random()
+                for (i in 0..10) {
+                    particles.add(FxParticle(x, y, (Random.nextFloat() - 0.5f) * 8f,
+                        (Random.nextFloat() - 0.5f) * 8f, 1f, 1f, 3,
+                        "", grassColor))
                 }
             }
         }
@@ -471,6 +482,11 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                     canvas.drawCircle(b.x, b.y, 18f, panelPaint)
                     panelPaint.color = mainColor
                 }
+                holiday == AppUtils.Companion.Holiday.WorldCup2026 -> {
+                    emojiPaint.textSize = panelLength * 1.5f
+                    emojiPaint.alpha = 255
+                    canvas.drawText("⚽", b.x, b.y + (emojiPaint.textSize / 3), emojiPaint)
+                }
                 isBreakout -> {
                     panelPaint.color = ctx.getColor(R.color.white)
                     canvas.drawCircle(b.x, b.y, 14f, panelPaint)
@@ -523,6 +539,7 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                 AppUtils.Companion.Holiday.Halloween -> ctx.getColor(R.color.halloween_orange)
                 AppUtils.Companion.Holiday.Christmas -> ctx.getColor(R.color.christmas_red)
                 AppUtils.Companion.Holiday.NewYear -> ctx.getColor(R.color.newyear_gold)
+                AppUtils.Companion.Holiday.WorldCup2026 -> ctx.getColor(R.color.white)
                 else -> ctx.getColor(R.color.white)
             }
         }

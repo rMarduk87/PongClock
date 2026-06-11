@@ -8,18 +8,18 @@ import android.os.Bundle
 import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import rpt.tool.pongclock.BaseFragment
+import rpt.com.base.BaseFragment
+import rpt.com.base.navigation.safeNavController
+import rpt.com.base.navigation.safeNavigate
 import rpt.tool.pongclock.R
 import rpt.tool.pongclock.databinding.FragmentMenuBinding
 import rpt.tool.pongclock.utils.view.*
 import rpt.tool.pongclock.utils.AppUtils
 import rpt.tool.pongclock.utils.extensions.toColor
 import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
-import rpt.tool.pongclock.utils.navigation.safeNavController
-import rpt.tool.pongclock.utils.navigation.safeNavigate
 import java.util.Calendar
 
-class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::inflate) {
+class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::inflate,true) {
 
     private var pulseAnimator: ObjectAnimator? = null
 
@@ -47,11 +47,12 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
             } else {
                 MenuFragmentDirections.actionMenuFragmentToClockFragment()
             }
-            safeNavController?.safeNavigate(action)
+            safeNavController(R.id.main_activity_nav_host_fragment)
+                ?.safeNavigate(action)
         }
 
         binding.btnSettings.setOnClickListener {
-            safeNavController?.safeNavigate(
+            safeNavController(R.id.main_activity_nav_host_fragment)?.safeNavigate(
                 MenuFragmentDirections.actionMenuFragmentToSettingsFragment())
         }
     }
@@ -81,8 +82,7 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
         val isSeason = SharedPreferencesManager.season == 1
         val isBreakout = SharedPreferencesManager.breakOut == 1
         val isFuturistic = SharedPreferencesManager.futuristic == 1
-        
-        // Classic è il default se niente altro è selezionato e non è futuristico
+
         val isClassic = SharedPreferencesManager.classic == 1 || (!isMatrix && !isSeason && !isBreakout && !isFuturistic)
 
         val white = context.getColor(R.color.white)
@@ -233,6 +233,17 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
 
                 styleButton(binding.btnClock, gold, true, cornerRadius = 24)
                 styleButton(binding.btnSettings, gold, false, cornerRadius = 24)
+            }
+            AppUtils.Companion.Holiday.WorldCup2026 -> {
+                val gold = context.getColor(R.color.worldcup_gold)
+                binding.root.setBackgroundColor(context.getColor(R.color.worldcup_bg))
+                binding.title.setTextColor(gold)
+                binding.title.text = context.getString(R.string.world_cup)
+                binding.title.typeface = Typeface.create("sans-serif-black", Typeface.BOLD)
+                binding.title.setShadowLayer(15f, 0f, 0f, context.getColor(R.color.black))
+
+                styleButton(binding.btnClock, gold, false, cornerRadius = 32)
+                styleButton(binding.btnSettings, context.getColor(R.color.white), true, cornerRadius = 32)
             }
             else -> {}
         }
