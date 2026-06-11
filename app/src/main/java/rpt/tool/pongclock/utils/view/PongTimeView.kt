@@ -67,6 +67,7 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
         private var canvasHeight = 0; private var canvasHeight2 = 0
         private var canvasWidth = 0; private var canvasWidth2 = 0
         private var numberScale = 5f
+        private var goalHeightPx = 0f
         private var panelLength = 20f
         private var panelXPos = 25f
         private var ballSpeed = 300f
@@ -210,6 +211,7 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                 playFieldX2 = width - playFieldX1
                 panelXPos = (width * 0.05f).coerceAtMost(50f)
                 panelLength = (height * 0.1f).coerceAtMost(100f)
+                goalHeightPx = context?.resources?.displayMetrics?.density?.let { it * 180f } ?: (height * 0.3f)
                 ballSpeed = width * 0.4f
                 panelSpeed = height * 0.35f
 
@@ -280,13 +282,13 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
             val rp = rightPanel ?: return
             val lp = leftPanel ?: return
 
-            if (b.x > rp.x && b.y > rp.y - panelLength && b.y < rp.y + panelLength) {
+            if (dX > 0 && b.x > rp.x && b.y > rp.y - panelLength && b.y < rp.y + panelLength) {
                 b.x = rp.x + (rp.x - b.x)
                 b.direction = (-b.direction + Math.PI + Math.random() * 0.6 - 0.3).toFloat()
                 b.direction = b.direction.coerceIn(MIN_RANGLE, MAX_RANGLE)
                 b.computeDir()
                 onPaddleHit(b.x, b.y)
-            } else if (b.x < lp.x && b.y > lp.y - panelLength && b.y < lp.y + panelLength) {
+            } else if (dX < 0 && b.x < lp.x && b.y > lp.y - panelLength && b.y < lp.y + panelLength) {
                 b.x = lp.x + (lp.x - b.x)
                 b.direction = -(b.direction - Math.PI.toFloat() + Math.random() * 0.6 - 0.3)
                     .toFloat()
@@ -296,8 +298,25 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
 
             // Punto segnato
             if (b.x < playFieldX1 || b.x > playFieldX2) {
-                newGame(gMode != GSTATE_MINUTESWIN)
-                if (gMode == GSTATE_HOURSWIN || gMode == GSTATE_MINUTESWIN) gMode = GSTATE_STOPPED
+                var isGoal = true
+                if (holiday == AppUtils.Companion.Holiday.WorldCup2026) {
+                    isGoal = b.y > (canvasHeight2 - goalHeightPx / 2) && b.y < (canvasHeight2 + goalHeightPx / 2)
+                }
+
+                if (isGoal) {
+                    newGame(gMode != GSTATE_MINUTESWIN)
+                    if (gMode == GSTATE_HOURSWIN || gMode == GSTATE_MINUTESWIN) gMode = GSTATE_STOPPED
+                } else {
+                    // Bounce off the wall (World Cup mode outside goal)
+                    if (b.x < playFieldX1) {
+                        b.x = playFieldX1 + (playFieldX1 - b.x)
+                        b.direction = (Math.PI.toFloat() - b.direction)
+                    } else {
+                        b.x = playFieldX2 - (b.x - playFieldX2)
+                        b.direction = (Math.PI.toFloat() - b.direction)
+                    }
+                    b.computeDir()
+                }
             }
         }
 
@@ -426,6 +445,15 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                     canvasWidth.toFloat(), playFieldY1.toFloat(), linePaint)
                 canvas.drawLine(0f, playFieldY2.toFloat(),
                     canvasWidth.toFloat(), playFieldY2.toFloat(), linePaint)
+
+                if (holiday == AppUtils.Companion.Holiday.WorldCup2026) {
+                    val pitchPaint = Paint(linePaint).apply {
+                        style = Paint.Style.STROKE
+                        strokeWidth = 4f
+                        alpha = 100
+                    }
+                    canvas.drawCircle(canvasWidth2.toFloat(), canvasHeight2.toFloat(), canvasHeight * 0.15f, pitchPaint)
+                }
             }
 
             canvas.drawLine(canvasWidth2.toFloat(), 0f,

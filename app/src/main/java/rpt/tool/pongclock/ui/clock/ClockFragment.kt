@@ -26,6 +26,11 @@ class ClockFragment : BaseFragment<FragmentClockBinding>(FragmentClockBinding::i
             return
         }
 
+        if (holiday == AppUtils.Companion.Holiday.WorldCup2026) {
+            binding.leftGoal.visibility = View.VISIBLE
+            binding.rightGoal.visibility = View.VISIBLE
+        }
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
