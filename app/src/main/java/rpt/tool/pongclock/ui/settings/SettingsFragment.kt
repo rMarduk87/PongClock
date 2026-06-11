@@ -5,13 +5,15 @@ import android.os.Bundle
 import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import rpt.tool.pongclock.BaseFragment
+import rpt.com.base.BaseFragment
+import rpt.com.base.navigation.safeNavController
+import rpt.tool.pongclock.R
 import rpt.tool.pongclock.databinding.FragmentSettingsBinding
 import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
-import rpt.tool.pongclock.utils.navigation.safeNavController
 import kotlin.math.max
 
-class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsBinding::inflate) {
+class SettingsFragment :
+    BaseFragment<FragmentSettingsBinding>(FragmentSettingsBinding::inflate,true) {
 
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -30,7 +32,8 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(FragmentSettingsB
             insets
         }
 
-        binding.toolbar.setNavigationOnClickListener { safeNavController?.popBackStack() }
+        binding.toolbar.setNavigationOnClickListener {
+            safeNavController(R.id.main_activity_nav_host_fragment)?.popBackStack() }
 
         updateSwitches()
 
