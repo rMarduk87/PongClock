@@ -31,12 +31,20 @@ class AppUtils {
             None,
             Halloween,
             Christmas,
-            NewYear;
+            NewYear,
+            WorldCup2026;
         }
 
         fun getHoliday(calendar: Calendar): Holiday {
             val month = calendar.get(Calendar.MONTH) // 0-based: 0=Jan, 9=Oct, 11=Dec
             val day = calendar.get(Calendar.DAY_OF_MONTH)
+            val year = calendar.get(Calendar.YEAR)
+
+            if (year == 2026) {
+                if ((month == Calendar.JUNE && day >= 11) || (month == Calendar.JULY && day <= 20)) {
+                    return Holiday.WorldCup2026
+                }
+            }
 
             return when (month) {
                 Calendar.OCTOBER if day == 31 -> Holiday.Halloween

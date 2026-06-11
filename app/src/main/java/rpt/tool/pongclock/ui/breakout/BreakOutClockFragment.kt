@@ -4,11 +4,11 @@ import android.os.Bundle
 import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import rpt.tool.pongclock.BaseFragment
+import rpt.com.base.BaseFragment
 import rpt.tool.pongclock.databinding.FragmentBreakOutClockBinding
 
 class BreakOutClockFragment: BaseFragment<FragmentBreakOutClockBinding>(
-    FragmentBreakOutClockBinding::inflate) {
+    FragmentBreakOutClockBinding::inflate,true) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

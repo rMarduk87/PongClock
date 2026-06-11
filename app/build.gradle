@@ -14,7 +14,7 @@ android {
         applicationId "rpt.tool.pongclock"
         minSdk 27
         targetSdk 36
-        versionCode 8
+        versionCode 9
         versionName "1.0.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -58,24 +58,21 @@ dependencies {
     implementation libs.androidx.preference.ktx
     implementation libs.androidx.recyclerview
     implementation libs.activity.ktx
+    implementation libs.androidx.ui.text
     //Misc
     implementation libs.material
     implementation libs.jsr305
-    //Timber
-    implementation libs.timber
     //Navigation
     implementation libs.androidx.navigation.fragment.ktx
     implementation libs.navigation.ui.ktx
     implementation libs.androidx.navigation.dynamic.features.fragment
-    //InApp Update
-    implementation libs.feature.delivery
-    implementation libs.app.update
-    implementation libs.play.services.tasks
     // Screen
     implementation libs.screen.easy
     implementation libs.androidx.activity
     //Balloon
     implementation(libs.balloon)
+    //App Base
+    implementation libs.rptbase
     //Test
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit
