@@ -77,6 +77,7 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
         private var isMatrix = false
         private var isBreakout = false
         private var isSeason = false
+        private var isFuturistic = false
         private var holiday = AppUtils.Companion.Holiday.None
         private var currentSeason = AppUtils.Companion.Season.Winter
 
@@ -85,6 +86,7 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
 
         private val dashedLinePaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        private val numberPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val panelPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val gridPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val emojiPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { textAlign =
@@ -130,6 +132,10 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                 0.0f)
             gridPaint.strokeWidth = 1f
 
+            numberPaint.style = Paint.Style.STROKE
+            numberPaint.strokeWidth = LINE_WIDTH.toFloat()
+            numberPaint.strokeCap = Paint.Cap.SQUARE
+
             val now = System.currentTimeMillis()
             date.time = now
             currentHours = date.hours
@@ -152,7 +158,7 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
             isMatrix = SharedPreferencesManager.mode == 1
             isBreakout = SharedPreferencesManager.breakOut == 1
             isSeason = SharedPreferencesManager.season == 1
-            val isFuturistic = SharedPreferencesManager.futuristic == 1
+            isFuturistic = SharedPreferencesManager.futuristic == 1
             
             // Classic è il default
             isClassic = (SharedPreferencesManager.classic == 1 || (!isMatrix && !isBreakout && !isSeason && !isFuturistic)) && holiday ==
@@ -199,6 +205,18 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
             dashedLinePaint.alpha = if (isClassic) 255 else 100
             gridPaint.color = mainColor
             gridPaint.alpha = if (isClassic) 0 else 20
+
+            numberPaint.color = mainColor
+            if (isFuturistic) {
+                linePaint.color = ctx.getColor(R.color.modern_cyan)
+                panelPaint.color = ctx.getColor(R.color.modern_cyan)
+                dashedLinePaint.color = ctx.getColor(R.color.modern_cyan)
+                numberPaint.color = ctx.getColor(R.color.neon_pink)
+                
+                linePaint.setShadowLayer(20f, 0f, 0f, linePaint.color)
+                panelPaint.setShadowLayer(20f, 0f, 0f, panelPaint.color)
+                numberPaint.setShadowLayer(30f, 0f, 0f, numberPaint.color)
+            }
         }
 
         fun setSurfaceSize(width: Int, height: Int) {
@@ -439,7 +457,7 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                         (i + 1) * brickWidth - 2, canvasHeight - 5f, 4f,
                         4f, panelPaint)
                 }
-                panelPaint.color = mainColor // Reset
+                panelPaint.color = if (isFuturistic) ctx.getColor(R.color.modern_cyan) else mainColor
             } else {
                 canvas.drawLine(0f, playFieldY1.toFloat(),
                     canvasWidth.toFloat(), playFieldY1.toFloat(), linePaint)
@@ -478,7 +496,7 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                 canvas.drawRoundRect(RectF(rp.x - 12f, rp.y - panelLength * 1.5f,
                     rp.x + 12f, rp.y + panelLength * 1.5f), 12f, 12f,
                     panelPaint)
-                panelPaint.color = mainColor
+                panelPaint.color = if (isFuturistic) ctx.getColor(R.color.modern_cyan) else mainColor
             } else {
                 canvas.drawRoundRect(RectF(lp.x - 8f, lp.y - panelLength * 1.2f,
                     lp.x + 8f, lp.y + panelLength * 1.2f), 8f, 8f, panelPaint)
@@ -518,7 +536,7 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                 isBreakout -> {
                     panelPaint.color = ctx.getColor(R.color.white)
                     canvas.drawCircle(b.x, b.y, 14f, panelPaint)
-                    panelPaint.color = mainColor
+                    panelPaint.color = if (isFuturistic) ctx.getColor(R.color.modern_cyan) else mainColor
                 }
                 isClassic || isMatrix -> canvas.drawRect(b.x - 8, b.y - 8, b.x +
                         8, b.y + 8, panelPaint)
@@ -536,7 +554,7 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                 val numHeight = LH * numberScale
                 translate(x.toFloat(), canvasHeight2 - numHeight / 2)
                 scale(numberScale, numberScale)
-                drawLines(numbers[n], linePaint)
+                drawLines(numbers[n], numberPaint)
             }
         }
 
