@@ -18,4 +18,11 @@ class Application  : Application() {
         super.onCreate()
         _instance = this
     }
+
+    override fun getSystemService(name: String): Any? {
+        if (name == "ethernet") {
+            return null
+        }
+        return super.getSystemService(name)
+    }
 }

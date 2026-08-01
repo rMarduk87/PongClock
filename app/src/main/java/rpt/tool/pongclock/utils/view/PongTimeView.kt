@@ -87,6 +87,7 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
         private val dashedLinePaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val numberPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        private val pinkLinePaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val panelPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val gridPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val emojiPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { textAlign =
@@ -135,6 +136,10 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
             numberPaint.style = Paint.Style.STROKE
             numberPaint.strokeWidth = LINE_WIDTH.toFloat()
             numberPaint.strokeCap = Paint.Cap.SQUARE
+
+            pinkLinePaint.style = Paint.Style.STROKE
+            pinkLinePaint.strokeWidth = LINE_WIDTH.toFloat()
+            pinkLinePaint.strokeCap = Paint.Cap.SQUARE
 
             val now = System.currentTimeMillis()
             date.time = now
@@ -212,10 +217,17 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                 panelPaint.color = ctx.getColor(R.color.modern_cyan)
                 dashedLinePaint.color = ctx.getColor(R.color.modern_cyan)
                 numberPaint.color = ctx.getColor(R.color.neon_pink)
+                pinkLinePaint.color = ctx.getColor(R.color.neon_pink)
                 
                 linePaint.setShadowLayer(20f, 0f, 0f, linePaint.color)
                 panelPaint.setShadowLayer(20f, 0f, 0f, panelPaint.color)
                 numberPaint.setShadowLayer(30f, 0f, 0f, numberPaint.color)
+                pinkLinePaint.setShadowLayer(20f, 0f, 0f, pinkLinePaint.color)
+            } else {
+                linePaint.clearShadowLayer()
+                panelPaint.clearShadowLayer()
+                numberPaint.clearShadowLayer()
+                pinkLinePaint.clearShadowLayer()
             }
         }
 
@@ -459,10 +471,17 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                 }
                 panelPaint.color = if (isFuturistic) ctx.getColor(R.color.modern_cyan) else mainColor
             } else {
-                canvas.drawLine(0f, playFieldY1.toFloat(),
-                    canvasWidth.toFloat(), playFieldY1.toFloat(), linePaint)
-                canvas.drawLine(0f, playFieldY2.toFloat(),
-                    canvasWidth.toFloat(), playFieldY2.toFloat(), linePaint)
+                if (isFuturistic) {
+                    canvas.drawLine(0f, playFieldY1.toFloat(),
+                        canvasWidth.toFloat(), playFieldY1.toFloat(), linePaint)
+                    canvas.drawLine(0f, playFieldY2.toFloat(),
+                        canvasWidth.toFloat(), playFieldY2.toFloat(), pinkLinePaint)
+                } else {
+                    canvas.drawLine(0f, playFieldY1.toFloat(),
+                        canvasWidth.toFloat(), playFieldY1.toFloat(), linePaint)
+                    canvas.drawLine(0f, playFieldY2.toFloat(),
+                        canvasWidth.toFloat(), playFieldY2.toFloat(), linePaint)
+                }
 
                 if (holiday == AppUtils.Companion.Holiday.WorldCup2026) {
                     val pitchPaint = Paint(linePaint).apply {
@@ -497,6 +516,15 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                     rp.x + 12f, rp.y + panelLength * 1.5f), 12f, 12f,
                     panelPaint)
                 panelPaint.color = if (isFuturistic) ctx.getColor(R.color.modern_cyan) else mainColor
+            } else if (isFuturistic) {
+                panelPaint.color = ctx.getColor(R.color.modern_cyan)
+                canvas.drawRoundRect(RectF(lp.x - 8f, lp.y - panelLength * 1.2f,
+                    lp.x + 8f, lp.y + panelLength * 1.2f), 8f, 8f, panelPaint)
+                
+                panelPaint.color = ctx.getColor(R.color.neon_pink)
+                canvas.drawRoundRect(RectF(rp.x - 8f, rp.y - panelLength * 1.2f,
+                    rp.x + 8f, rp.y + panelLength * 1.2f), 8f, 8f, panelPaint)
+                panelPaint.color = ctx.getColor(R.color.modern_cyan) // Reset for ball/trail
             } else {
                 canvas.drawRoundRect(RectF(lp.x - 8f, lp.y - panelLength * 1.2f,
                     lp.x + 8f, lp.y + panelLength * 1.2f), 8f, 8f, panelPaint)
@@ -509,10 +537,19 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
 
             if (!isClassic && !isBreakout && holiday == AppUtils.Companion.Holiday.None) {
                 // Futuristic Trail Effect
-                ballTrail.forEachIndexed { index, point ->
-                    panelPaint.alpha = 255 - (index * 30)
-                    canvas.drawCircle(point.x, point.y, 10f - (index * 0.8f),
-                        panelPaint)
+                if (isFuturistic) {
+                    ballTrail.forEachIndexed { index, point ->
+                        panelPaint.color = if (index < 3) ctx.getColor(R.color.neon_pink) else ctx.getColor(R.color.modern_cyan)
+                        panelPaint.alpha = 255 - (index * 30)
+                        canvas.drawRect(point.x - 8, point.y - 8, point.x + 8, point.y + 8, panelPaint)
+                    }
+                    panelPaint.color = ctx.getColor(R.color.modern_cyan)
+                } else {
+                    ballTrail.forEachIndexed { index, point ->
+                        panelPaint.alpha = 255 - (index * 30)
+                        canvas.drawCircle(point.x, point.y, 10f - (index * 0.8f),
+                            panelPaint)
+                    }
                 }
                 panelPaint.alpha = 255
             }
@@ -537,6 +574,11 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
                     panelPaint.color = ctx.getColor(R.color.white)
                     canvas.drawCircle(b.x, b.y, 14f, panelPaint)
                     panelPaint.color = if (isFuturistic) ctx.getColor(R.color.modern_cyan) else mainColor
+                }
+                isFuturistic -> {
+                    panelPaint.color = ctx.getColor(R.color.neon_pink)
+                    canvas.drawRect(b.x - 10, b.y - 10, b.x + 10, b.y + 10, panelPaint)
+                    panelPaint.color = ctx.getColor(R.color.modern_cyan)
                 }
                 isClassic || isMatrix -> canvas.drawRect(b.x - 8, b.y - 8, b.x +
                         8, b.y + 8, panelPaint)

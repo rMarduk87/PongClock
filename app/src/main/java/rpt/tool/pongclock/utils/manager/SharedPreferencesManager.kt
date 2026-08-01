@@ -30,9 +30,9 @@ object SharedPreferencesManager {
         get() = sharedPreferences.getInt(AppUtils.BREAKOUT_MODE, 0)
         set(value) = sharedPreferences.edit { putInt(AppUtils.BREAKOUT_MODE, value) }
     var classic: Int
-        get() = sharedPreferences.getInt(AppUtils.CLASSIC_MODE, 1) // Default to 1 (Classic)
+        get() = sharedPreferences.getInt(AppUtils.CLASSIC_MODE, 0)
         set(value) = sharedPreferences.edit { putInt(AppUtils.CLASSIC_MODE, value) }
     var futuristic: Int
-        get() = sharedPreferences.getInt(AppUtils.FUTURISTIC_MODE, 0) // Default to 0
+        get() = sharedPreferences.getInt(AppUtils.FUTURISTIC_MODE, 1) // Default to 1
         set(value) = sharedPreferences.edit { putInt(AppUtils.FUTURISTIC_MODE, value) }
 }

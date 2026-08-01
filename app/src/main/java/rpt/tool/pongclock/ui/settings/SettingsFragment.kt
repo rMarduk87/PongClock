@@ -125,6 +125,9 @@ class SettingsFragment :
         val ctx = context ?: return
         val (mainColor, bgColor) = AppUtils.getModeColors(ctx)
         
+        val isFuturistic = SharedPreferencesManager.futuristic == 1
+        val accentColor = if (isFuturistic) ctx.getColor(R.color.neon_pink) else mainColor
+
         _binding?.let {
             it.root.setBackgroundColor(bgColor)
             it.toolbar.setBackgroundColor(bgColor)
@@ -143,8 +146,8 @@ class SettingsFragment :
             )
             
             switches.forEach { sw ->
-                sw.thumbTintList = ColorStateList.valueOf(mainColor)
-                sw.trackTintList = ColorStateList.valueOf(mainColor).withAlpha(100)
+                sw.thumbTintList = ColorStateList.valueOf(accentColor)
+                sw.trackTintList = ColorStateList.valueOf(accentColor).withAlpha(100)
             }
         }
     }

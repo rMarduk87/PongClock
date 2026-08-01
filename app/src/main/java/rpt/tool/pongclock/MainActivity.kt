@@ -18,6 +18,13 @@ class MainActivity : BaseActivity() {
         setContentView(binding.root)
     }
 
+    override fun getSystemService(name: String): Any? {
+        if (name == "ethernet") {
+            return null
+        }
+        return super.getSystemService(name)
+    }
+
 
     override fun onNavigateUp(): Boolean {
         val navHostFragment =
