@@ -1,5 +1,6 @@
 package rpt.tool.pongclock.utils
 
+import rpt.tool.pongclock.utils.extensions.toColor
 import java.util.Calendar
 
 class AppUtils {
@@ -46,10 +47,10 @@ class AppUtils {
                 }
             }
 
-            return when (month) {
-                Calendar.OCTOBER if day == 31 -> Holiday.Halloween
-                Calendar.DECEMBER if day == 25 -> Holiday.Christmas
-                Calendar.JANUARY if day == 1 -> Holiday.NewYear
+            return when {
+                month == Calendar.OCTOBER && day == 31 -> Holiday.Halloween
+                month == Calendar.DECEMBER && day == 25 -> Holiday.Christmas
+                month == Calendar.JANUARY && day == 1 -> Holiday.NewYear
                 else -> Holiday.None
             }
         }
@@ -68,6 +69,61 @@ class AppUtils {
                 }
             }
             return result
+        }
+
+        fun getModeColors(ctx: android.content.Context): Pair<Int, Int> {
+            val calendar = Calendar.getInstance()
+            val holiday = getHoliday(calendar)
+            
+            val isMatrix = rpt.tool.pongclock.utils.manager.SharedPreferencesManager.mode == 1
+            val isSeason = rpt.tool.pongclock.utils.manager.SharedPreferencesManager.season == 1
+            val isBreakout = rpt.tool.pongclock.utils.manager.SharedPreferencesManager.breakOut == 1
+            val isFuturistic = rpt.tool.pongclock.utils.manager.SharedPreferencesManager.futuristic == 1
+
+            var mainColor = ctx.getColor(rpt.tool.pongclock.R.color.white)
+            var bgColor = ctx.getColor(rpt.tool.pongclock.R.color.black)
+
+            if (holiday != Holiday.None) {
+                when (holiday) {
+                    Holiday.Halloween -> {
+                        mainColor = ctx.getColor(rpt.tool.pongclock.R.color.halloween_orange)
+                        bgColor = ctx.getColor(rpt.tool.pongclock.R.color.halloween_bg)
+                    }
+                    Holiday.Christmas -> {
+                        mainColor = ctx.getColor(rpt.tool.pongclock.R.color.christmas_red)
+                        bgColor = ctx.getColor(rpt.tool.pongclock.R.color.christmas_bg)
+                    }
+                    Holiday.NewYear -> {
+                        mainColor = ctx.getColor(rpt.tool.pongclock.R.color.newyear_gold)
+                        bgColor = ctx.getColor(rpt.tool.pongclock.R.color.newyear_bg)
+                    }
+                    Holiday.WorldCup2026 -> {
+                        mainColor = ctx.getColor(rpt.tool.pongclock.R.color.white)
+                        bgColor = ctx.getColor(rpt.tool.pongclock.R.color.worldcup_bg)
+                    }
+                    else -> {}
+                }
+            } else {
+                if (isMatrix) {
+                    mainColor = ctx.getColor(rpt.tool.pongclock.R.color.matrix)
+                    bgColor = ctx.getColor(rpt.tool.pongclock.R.color.black)
+                } else if (isSeason) {
+                    val season = getSeason(calendar.get(Calendar.DAY_OF_YEAR))
+                    mainColor = ctx.getColor(season.toColor())
+                    bgColor = ctx.getColor(rpt.tool.pongclock.R.color.modern_background)
+                } else if (isBreakout) {
+                    mainColor = ctx.getColor(rpt.tool.pongclock.R.color.white)
+                    bgColor = ctx.getColor(rpt.tool.pongclock.R.color.breakout_bg)
+                } else if (isFuturistic) {
+                    mainColor = ctx.getColor(rpt.tool.pongclock.R.color.modern_cyan)
+                    bgColor = ctx.getColor(rpt.tool.pongclock.R.color.modern_background)
+                } else {
+                    mainColor = ctx.getColor(rpt.tool.pongclock.R.color.white)
+                    bgColor = ctx.getColor(rpt.tool.pongclock.R.color.black)
+                }
+            }
+            
+            return Pair(mainColor, bgColor)
         }
     }
 }

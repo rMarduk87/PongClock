@@ -171,6 +171,7 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
             else -> {
                 // Stile Moderno/Futuristico
                 val cyan = context.getColor(R.color.modern_cyan)
+                val pink = context.getColor(R.color.neon_pink)
                 binding.root.setBackgroundColor(context.getColor(R.color.modern_bg))
                 binding.title.setTextColor(cyan)
                 binding.title.setShadowLayer(20f, 0f, 0f, cyan)
@@ -178,7 +179,7 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
                 binding.fxContainer.addView(FuturisticEffectView(context))
 
                 styleButton(binding.btnClock, cyan, false, cornerRadius = 24)
-                styleButton(binding.btnSettings, cyan, true, cornerRadius = 24)
+                styleButton(binding.btnSettings, pink, true, cornerRadius = 24)
             }
         }
     }
