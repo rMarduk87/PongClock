@@ -3,11 +3,16 @@ package rpt.tool.pongclock.utils.view
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.util.AttributeSet
 import android.view.View
 import rpt.tool.pongclock.R
 import java.util.*
 
-class MatrixEffectView(context: Context) : View(context) {
+class MatrixEffectView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = context.getColor(R.color.matrix)
         textSize = 40f

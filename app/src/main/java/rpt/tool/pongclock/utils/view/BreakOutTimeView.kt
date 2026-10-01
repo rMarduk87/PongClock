@@ -9,8 +9,11 @@ import java.util.*
 import kotlin.math.*
 import rpt.tool.pongclock.R
 
-class BreakOutTimeView(context: Context?, attrs: AttributeSet?) :
-    SurfaceView(context, attrs), SurfaceHolder.Callback {
+class BreakOutTimeView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : SurfaceView(context, attrs, defStyleAttr), SurfaceHolder.Callback {
 
     private var thread: BreakOutThread? = null
 

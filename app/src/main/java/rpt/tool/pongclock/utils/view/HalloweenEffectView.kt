@@ -3,11 +3,16 @@ package rpt.tool.pongclock.utils.view
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.util.AttributeSet
 import android.view.View
 import kotlin.math.sin
 import kotlin.random.Random
 
-class HalloweenEffectView(context: Context) : View(context) {
+class HalloweenEffectView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { textSize = 80f }
     private val entities = List(15) { SpookyEntity() }
     private var isInit = false

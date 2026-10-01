@@ -6,6 +6,7 @@ import androidx.annotation.RequiresApi
 import androidx.navigation.fragment.NavHostFragment
 import rpt.com.base.BaseActivity
 import rpt.tool.pongclock.databinding.ActivityMainBinding
+import rpt.tool.pongclock.utils.AppUtils
 
 class MainActivity : BaseActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -14,6 +15,7 @@ class MainActivity : BaseActivity() {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AppUtils.updateAppIcon(this)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
     }

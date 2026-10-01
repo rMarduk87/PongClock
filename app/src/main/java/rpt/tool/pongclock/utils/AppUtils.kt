@@ -1,6 +1,10 @@
 package rpt.tool.pongclock.utils
 
+import android.content.ComponentName
+import android.content.Context
+import android.content.pm.PackageManager
 import rpt.tool.pongclock.utils.extensions.toColor
+import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
 import java.util.Calendar
 
 class AppUtils {
@@ -101,7 +105,6 @@ class AppUtils {
                         mainColor = ctx.getColor(rpt.tool.pongclock.R.color.white)
                         bgColor = ctx.getColor(rpt.tool.pongclock.R.color.worldcup_bg)
                     }
-                    else -> {}
                 }
             } else {
                 if (isMatrix) {
@@ -124,6 +127,62 @@ class AppUtils {
             }
             
             return Pair(mainColor, bgColor)
+        }
+
+        fun updateAppIcon(context: Context) {
+
+            val calendar = Calendar.getInstance()
+            val holiday = getHoliday(calendar)
+
+            val isSeason = SharedPreferencesManager.season == 1
+
+            val icon = when {
+                holiday == Holiday.Halloween -> "LauncherHalloween"
+                holiday == Holiday.Christmas -> "LauncherChristmas"
+                holiday == Holiday.NewYear -> "LauncherNewYear"
+                holiday == Holiday.WorldCup2026 -> "LauncherWorldCup"
+
+                isSeason -> {
+                    when (getSeason(calendar.get(Calendar.DAY_OF_YEAR))) {
+                        Season.Winter -> "LauncherWinter"
+                        Season.Spring -> "LauncherSpring"
+                        Season.Summer -> "LauncherSummer"
+                        Season.Fall -> "LauncherFall"
+                    }
+                }
+
+                else -> "LauncherDefault"
+            }
+
+            val aliases = listOf(
+                "LauncherDefault",
+                "LauncherWinter",
+                "LauncherSpring",
+                "LauncherSummer",
+                "LauncherFall",
+                "LauncherHalloween",
+                "LauncherChristmas",
+                "LauncherNewYear",
+                "LauncherWorldCup"
+            )
+
+            val pm = context.packageManager
+
+            for (alias in aliases) {
+                val component = ComponentName(
+                    context,
+                    "${context.packageName}.$alias"
+                )
+
+                pm.setComponentEnabledSetting(
+                    component,
+                    if (alias == icon)
+                        PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                    else
+                        PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP
+                )
+            }
         }
     }
 }
