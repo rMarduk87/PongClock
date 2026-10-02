@@ -11,7 +11,6 @@ import rpt.com.base.navigation.safeNavController
 import rpt.tool.pongclock.R
 import rpt.tool.pongclock.databinding.FragmentSettingsBinding
 import rpt.tool.pongclock.utils.AppUtils
-import rpt.tool.pongclock.utils.extensions.toColor
 import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
 import java.util.Calendar
 import kotlin.math.max
@@ -52,6 +51,7 @@ class SettingsFragment :
             }
             updateSwitches()
             applyTheme()
+            context?.let { AppUtils.updateAppIcon(it) }
         }
 
         binding.switchFuturisticMode.setOnCheckedChangeListener { _, isChecked ->
@@ -64,6 +64,7 @@ class SettingsFragment :
             }
             updateSwitches()
             applyTheme()
+            context?.let { AppUtils.updateAppIcon(it) }
         }
 
         binding.switchMatrixMode.setOnCheckedChangeListener { _, isChecked ->
@@ -76,6 +77,7 @@ class SettingsFragment :
             }
             updateSwitches()
             applyTheme()
+            context?.let { AppUtils.updateAppIcon(it) }
         }
 
         binding.switchSeasonMode.setOnCheckedChangeListener { _, isChecked ->
@@ -88,6 +90,7 @@ class SettingsFragment :
             }
             updateSwitches()
             applyTheme()
+            context?.let { AppUtils.updateAppIcon(it) }
         }
 
         binding.switchBreakoutMode.setOnCheckedChangeListener { _, isChecked ->
@@ -100,6 +103,7 @@ class SettingsFragment :
             }
             updateSwitches()
             applyTheme()
+            context?.let { AppUtils.updateAppIcon(it) }
         }
     }
 
@@ -153,7 +157,6 @@ class SettingsFragment :
     }
 
     override fun onDestroyView() {
-        // Clear listeners to avoid callbacks during/after destruction
         _binding?.let {
             it.switchClassicMode.setOnCheckedChangeListener(null)
             it.switchFuturisticMode.setOnCheckedChangeListener(null)

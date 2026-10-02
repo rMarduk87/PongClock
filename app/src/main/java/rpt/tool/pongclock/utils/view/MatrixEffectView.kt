@@ -23,14 +23,19 @@ class MatrixEffectView @JvmOverloads constructor(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
+        if (w <= 0 || h <= 0) return
         columns = w / 40
         drops = IntArray(columns)
-        for (i in 0 until columns) drops[i] = random.nextInt(h / 40)
+        val maxRows = (h / 40).coerceAtLeast(1)
+        for (i in 0 until columns) {
+            drops[i] = random.nextInt(maxRows)
+        }
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        // Fondo semitrasparente per l'effetto scia
+        if (columns == 0 || drops.isEmpty()) return
+
         canvas.drawColor(context.getColor(R.color.matrix_dim_bg))
 
         paint.color = context.getColor(R.color.matrix)

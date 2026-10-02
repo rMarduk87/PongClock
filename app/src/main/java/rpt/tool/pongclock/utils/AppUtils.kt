@@ -79,10 +79,10 @@ class AppUtils {
             val calendar = Calendar.getInstance()
             val holiday = getHoliday(calendar)
             
-            val isMatrix = rpt.tool.pongclock.utils.manager.SharedPreferencesManager.mode == 1
-            val isSeason = rpt.tool.pongclock.utils.manager.SharedPreferencesManager.season == 1
-            val isBreakout = rpt.tool.pongclock.utils.manager.SharedPreferencesManager.breakOut == 1
-            val isFuturistic = rpt.tool.pongclock.utils.manager.SharedPreferencesManager.futuristic == 1
+            val isMatrix = SharedPreferencesManager.mode == 1
+            val isSeason = SharedPreferencesManager.season == 1
+            val isBreakout = SharedPreferencesManager.breakOut == 1
+            val isFuturistic = SharedPreferencesManager.futuristic == 1
 
             var mainColor = ctx.getColor(rpt.tool.pongclock.R.color.white)
             var bgColor = ctx.getColor(rpt.tool.pongclock.R.color.black)
@@ -131,58 +131,92 @@ class AppUtils {
 
         fun updateAppIcon(context: Context) {
 
-            val calendar = Calendar.getInstance()
-            val holiday = getHoliday(calendar)
-
-            val isSeason = SharedPreferencesManager.season == 1
-
-            val icon = when {
-                holiday == Holiday.Halloween -> "LauncherHalloween"
-                holiday == Holiday.Christmas -> "LauncherChristmas"
-                holiday == Holiday.NewYear -> "LauncherNewYear"
-                holiday == Holiday.WorldCup2026 -> "LauncherWorldCup"
-
-                isSeason -> {
-                    when (getSeason(calendar.get(Calendar.DAY_OF_YEAR))) {
-                        Season.Winter -> "LauncherWinter"
-                        Season.Spring -> "LauncherSpring"
-                        Season.Summer -> "LauncherSummer"
-                        Season.Fall -> "LauncherFall"
-                    }
-                }
-
-                else -> "LauncherDefault"
-            }
-
             val aliases = listOf(
                 "LauncherDefault",
-                "LauncherWinter",
-                "LauncherSpring",
-                "LauncherSummer",
-                "LauncherFall",
                 "LauncherHalloween",
                 "LauncherChristmas",
                 "LauncherNewYear",
-                "LauncherWorldCup"
+                "LauncherWinter",
+                "LauncherSpring",
+                "LauncherSummer",
+                "LauncherFall"
             )
+
+            val calendar = Calendar.getInstance()
+            val holiday = getHoliday(calendar)
+
+            val activeAlias = when (holiday) {
+                Holiday.Halloween -> "LauncherHalloween"
+                Holiday.Christmas -> "LauncherChristmas"
+                Holiday.NewYear -> "LauncherNewYear"
+                Holiday.WorldCup2026 -> "LauncherDefault"
+
+                Holiday.None -> {
+                    if (SharedPreferencesManager.season == 1) {
+                        when (getSeason(calendar.get(Calendar.DAY_OF_YEAR))) {
+                            Season.Winter -> "LauncherWinter"
+                            Season.Spring -> "LauncherSpring"
+                            Season.Summer -> "LauncherSummer"
+                            Season.Fall -> "LauncherFall"
+                        }
+                    } else {
+                        "LauncherDefault"
+                    }
+                }
+            }
 
             val pm = context.packageManager
 
-            for (alias in aliases) {
-                val component = ComponentName(
-                    context,
-                    "${context.packageName}.$alias"
-                )
-
-                pm.setComponentEnabledSetting(
-                    component,
-                    if (alias == icon)
-                        PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-                    else
+            fun isComponentEnabled(component: ComponentName, isDefaultEnabled: Boolean): Boolean {
+                return try {
+                    when (pm.getComponentEnabledSetting(component)) {
+                        PackageManager.COMPONENT_ENABLED_STATE_ENABLED -> true
                         PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                    PackageManager.DONT_KILL_APP
-                )
+                        PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER,
+                        PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED -> false
+                        else -> isDefaultEnabled
+                    }
+                } catch (_: Exception) {
+                    isDefaultEnabled
+                }
             }
+
+            val activeComponent = ComponentName(
+                context.packageName,
+                "${context.packageName}.$activeAlias"
+            )
+
+            if (!isComponentEnabled(activeComponent, activeAlias == "LauncherDefault")) {
+                try {
+                    pm.setComponentEnabledSetting(
+                        activeComponent,
+                        PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                        PackageManager.DONT_KILL_APP
+                    )
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
+            aliases
+                .filter { it != activeAlias }
+                .forEach { alias ->
+                    val component = ComponentName(
+                        context.packageName,
+                        "${context.packageName}.$alias"
+                    )
+                    if (isComponentEnabled(component, alias == "LauncherDefault")) {
+                        try {
+                            pm.setComponentEnabledSetting(
+                                component,
+                                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                                PackageManager.DONT_KILL_APP
+                            )
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
         }
     }
 }

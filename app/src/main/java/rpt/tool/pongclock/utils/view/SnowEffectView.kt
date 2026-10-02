@@ -23,6 +23,7 @@ class SnowEffectView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        if (width <= 0 || height <= 0) return
 
         if (flakes.size < 100) {
             flakes.add(Flake(random.nextFloat() * width, -10f, random.nextFloat() * 5 + 2, random.nextFloat() * 8 + 4))

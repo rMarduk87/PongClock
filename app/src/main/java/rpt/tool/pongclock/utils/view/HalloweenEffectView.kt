@@ -19,12 +19,16 @@ class HalloweenEffectView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        if (!isInit) { entities.forEach { it.init(width.toFloat(),
-            height.toFloat()) }; isInit = true }
+        if (width <= 0 || height <= 0) return
+
+        if (!isInit) {
+            entities.forEach { it.init(width.toFloat(), height.toFloat()) }
+            isInit = true
+        }
 
         entities.forEach { e ->
             e.update(width.toFloat(), height.toFloat())
-            paint.alpha = (e.alpha * 255).toInt()
+            paint.alpha = (e.alpha * 255).toInt().coerceIn(0, 255)
             canvas.drawText(e.emoji, e.x + sin(e.y / 50f) * 50f, e.y, paint)
         }
         postInvalidateDelayed(16)
@@ -35,8 +39,8 @@ class HalloweenEffectView @JvmOverloads constructor(
         fun init(w: Float, h: Float) {
             val emojis = listOf("🦇", "👻", "🎃", "🕸️")
             emoji = emojis.random()
-            x = Random.nextFloat() * w
-            y = Random.nextFloat() * h + h
+            x = if (w > 0) Random.nextFloat() * w else 0f
+            y = if (h > 0) Random.nextFloat() * h + h else 100f
             speedY = Random.nextFloat() * 4 + 2
             alpha = Random.nextFloat() * 0.5f + 0.3f
         }

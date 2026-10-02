@@ -31,6 +31,8 @@ class BreakoutSimulatedView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        if (width <= 0 || height <= 0) return
+
         if (!isInit) initGame(width.toFloat(), height.toFloat())
 
         paddleX = ballX - 60f
@@ -65,6 +67,7 @@ class BreakoutSimulatedView @JvmOverloads constructor(
     }
 
     private fun initGame(w: Float, h: Float) {
+        if (w <= 0 || h <= 0) return
         bricks.clear()
         val cols = 7; val rows = 5; val pad = 10f
         val bw = (w - pad * (cols + 1)) / cols

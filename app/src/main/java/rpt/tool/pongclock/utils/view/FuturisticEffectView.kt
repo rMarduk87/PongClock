@@ -22,6 +22,8 @@ class FuturisticEffectView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        if (width <= 0 || height <= 0) return
+
         if (!isInit) { 
             nodes.forEach { it.init(width.toFloat(), height.toFloat()) }
             isInit = true 
@@ -36,7 +38,7 @@ class FuturisticEffectView @JvmOverloads constructor(
             nodes.forEach { other ->
                 val dist = hypot(node.x - other.x, node.y - other.y)
                 if (dist < 150f) {
-                    paint.alpha = (255 * (1 - dist / 150f)).toInt()
+                    paint.alpha = (255 * (1 - dist / 150f)).toInt().coerceIn(0, 255)
                     paint.strokeWidth = 2f
                     canvas.drawLine(node.x, node.y, other.x,
                         other.y, paint)

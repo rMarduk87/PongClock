@@ -5,8 +5,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
-        android:allowBackup="true"
         android:name=".Application"
+        android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -14,19 +14,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PongClock"
         tools:targetApi="31">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:screenOrientation="sensor"
             tools:ignore="DiscouragedApi">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
+
         <activity-alias
-            android:name=".LauncherDefault"
+            android:name="rpt.tool.pongclock.LauncherDefault"
             android:enabled="true"
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
@@ -40,56 +42,102 @@
         </activity-alias>
 
         <activity-alias
-            android:name=".LauncherHalloween"
+            android:name="rpt.tool.pongclock.LauncherHalloween"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_halloween"
-            android:targetActivity=".MainActivity" />
+            android:targetActivity=".MainActivity">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity-alias>
 
         <activity-alias
-            android:name=".LauncherChristmas"
+            android:name="rpt.tool.pongclock.LauncherChristmas"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_christmas"
-            android:targetActivity=".MainActivity" />
+            android:targetActivity=".MainActivity">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity-alias>
 
         <activity-alias
-            android:name=".LauncherNewYear"
+            android:name="rpt.tool.pongclock.LauncherNewYear"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_newyear"
-            android:targetActivity=".MainActivity" />
+            android:targetActivity=".MainActivity">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity-alias>
 
         <activity-alias
-            android:name=".LauncherWorldCup"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@mipmap/ic_launcher_worldcup"
-            android:targetActivity=".MainActivity" />
-        <activity-alias
-            android:name=".LauncherWinter"
+            android:name="rpt.tool.pongclock.LauncherWinter"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_winter"
-            android:targetActivity=".MainActivity" />
+            android:targetActivity=".MainActivity">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity-alias>
+
         <activity-alias
-            android:name=".LauncherSpring"
+            android:name="rpt.tool.pongclock.LauncherSpring"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_spring"
-            android:targetActivity=".MainActivity" />
+            android:targetActivity=".MainActivity">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity-alias>
+
         <activity-alias
-            android:name=".LauncherSummer"
+            android:name="rpt.tool.pongclock.LauncherSummer"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_summer"
-            android:targetActivity=".MainActivity" />
+            android:targetActivity=".MainActivity">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity-alias>
+
         <activity-alias
-            android:name=".LauncherFall"
+            android:name="rpt.tool.pongclock.LauncherFall"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_fall"
-            android:targetActivity=".MainActivity" />
+            android:targetActivity=".MainActivity">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity-alias>
 
         <receiver
             android:name=".utils.receiver.IconChangeBroadcastReceiver"

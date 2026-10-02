@@ -23,6 +23,7 @@ class FireworksEffectView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        if (width <= 0 || height <= 0) return
 
         if (random.nextFloat() > 0.95) {
             val cx = random.nextFloat() * width
@@ -44,11 +45,11 @@ class FireworksEffectView @JvmOverloads constructor(
         while (iterator.hasNext()) {
             val s = iterator.next()
             paint.color = s.color
-            paint.alpha = s.alpha
+            paint.alpha = s.alpha.coerceIn(0, 255)
             canvas.drawCircle(s.x, s.y, 4f, paint)
             s.x += s.vx
             s.y += s.vy
-            s.vy += 0.2f // Gravità
+            s.vy += 0.2f
             s.alpha -= 5
             if (s.alpha <= 0) iterator.remove()
         }

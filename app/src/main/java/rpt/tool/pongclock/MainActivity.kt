@@ -1,8 +1,6 @@
 package rpt.tool.pongclock
 
-import android.os.Build
 import android.os.Bundle
-import androidx.annotation.RequiresApi
 import androidx.navigation.fragment.NavHostFragment
 import rpt.com.base.BaseActivity
 import rpt.tool.pongclock.databinding.ActivityMainBinding
@@ -12,12 +10,11 @@ class MainActivity : BaseActivity() {
     private lateinit var binding: ActivityMainBinding
 
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AppUtils.updateAppIcon(this)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        AppUtils.updateAppIcon(this)
     }
 
     override fun getSystemService(name: String): Any? {
