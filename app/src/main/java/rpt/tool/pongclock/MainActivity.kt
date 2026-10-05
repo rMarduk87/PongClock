@@ -14,7 +14,6 @@ class MainActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        AppUtils.updateAppIcon(this)
     }
 
     override fun getSystemService(name: String): Any? {
@@ -22,6 +21,11 @@ class MainActivity : BaseActivity() {
             return null
         }
         return super.getSystemService(name)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        AppUtils.updateAppIcon(this)
     }
 
 

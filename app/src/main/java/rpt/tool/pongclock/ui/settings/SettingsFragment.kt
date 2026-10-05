@@ -4,8 +4,11 @@ import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
+import android.widget.TextView
+import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.android.material.snackbar.Snackbar
 import rpt.com.base.BaseFragment
 import rpt.com.base.navigation.safeNavController
 import rpt.tool.pongclock.R
@@ -51,7 +54,7 @@ class SettingsFragment :
             }
             updateSwitches()
             applyTheme()
-            context?.let { AppUtils.updateAppIcon(it) }
+            showIconFeedback()
         }
 
         binding.switchFuturisticMode.setOnCheckedChangeListener { _, isChecked ->
@@ -64,7 +67,7 @@ class SettingsFragment :
             }
             updateSwitches()
             applyTheme()
-            context?.let { AppUtils.updateAppIcon(it) }
+            showIconFeedback()
         }
 
         binding.switchMatrixMode.setOnCheckedChangeListener { _, isChecked ->
@@ -77,7 +80,7 @@ class SettingsFragment :
             }
             updateSwitches()
             applyTheme()
-            context?.let { AppUtils.updateAppIcon(it) }
+            showIconFeedback()
         }
 
         binding.switchSeasonMode.setOnCheckedChangeListener { _, isChecked ->
@@ -90,7 +93,7 @@ class SettingsFragment :
             }
             updateSwitches()
             applyTheme()
-            context?.let { AppUtils.updateAppIcon(it) }
+            showIconFeedback()
         }
 
         binding.switchBreakoutMode.setOnCheckedChangeListener { _, isChecked ->
@@ -103,7 +106,7 @@ class SettingsFragment :
             }
             updateSwitches()
             applyTheme()
-            context?.let { AppUtils.updateAppIcon(it) }
+            showIconFeedback()
         }
     }
 
@@ -154,6 +157,25 @@ class SettingsFragment :
                 sw.trackTintList = ColorStateList.valueOf(accentColor).withAlpha(100)
             }
         }
+    }
+
+    private fun showIconFeedback() {
+        val iconResId = AppUtils.getPendingIconResId()
+
+        val snackbar = Snackbar.make(
+            binding.root,
+            getString(R.string.icon_update_on_close),
+            Snackbar.LENGTH_SHORT
+        )
+
+        val textView = snackbar.view.
+        findViewById<TextView>(com.google.android.material.R.id.snackbar_text)
+
+        textView.setCompoundDrawablesWithIntrinsicBounds(iconResId,
+            0, 0, 0)
+        textView.compoundDrawablePadding = 32
+
+        snackbar.show()
     }
 
     override fun onDestroyView() {

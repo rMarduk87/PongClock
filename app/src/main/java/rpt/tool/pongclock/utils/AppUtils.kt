@@ -3,6 +3,7 @@ package rpt.tool.pongclock.utils
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
+import rpt.tool.pongclock.R
 import rpt.tool.pongclock.utils.extensions.toColor
 import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
 import java.util.Calendar
@@ -217,6 +218,30 @@ class AppUtils {
                         }
                     }
                 }
+        }
+
+        fun getPendingIconResId(): Int {
+            val calendar = Calendar.getInstance()
+            val holiday = getHoliday(calendar)
+
+            return when (holiday) {
+                Holiday.Halloween -> R.mipmap.ic_launcher_halloween
+                Holiday.Christmas -> R.mipmap.ic_launcher_christmas
+                Holiday.NewYear -> R.mipmap.ic_launcher_newyear
+                Holiday.WorldCup2026 -> R.mipmap.ic_launcher
+                Holiday.None -> {
+                    if (SharedPreferencesManager.season == 1) {
+                        when (getSeason(calendar.get(Calendar.DAY_OF_YEAR))) {
+                            Season.Winter -> R.mipmap.ic_launcher_winter
+                            Season.Spring -> R.mipmap.ic_launcher_spring
+                            Season.Summer -> R.mipmap.ic_launcher_summer
+                            Season.Fall -> R.mipmap.ic_launcher_fall
+                        }
+                    } else {
+                        R.mipmap.ic_launcher
+                    }
+                }
+            }
         }
     }
 }

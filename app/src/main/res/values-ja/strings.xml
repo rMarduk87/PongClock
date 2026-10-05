@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Pong Clock – Retro Clock</string>
+    <string name="title">Pong Clock –\nRetro Clock</string>
     <string name="settings_t">設定</string>
     <string name="matrix">マトリックス モード</string>
     <string name="season">シーズン モード</string>
@@ -24,4 +25,5 @@
     <string name="opening_settings">設定を開いています…</string>
     <string name="nav_failed">ナビゲーションに失敗しました</string>
     <string name="img" />
+    <string name="icon_update_on_close">アイコンはアプリを閉じるときに更新されます</string>
 </resources>
