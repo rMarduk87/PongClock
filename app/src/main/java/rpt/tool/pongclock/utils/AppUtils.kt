@@ -1,6 +1,11 @@
 package rpt.tool.pongclock.utils
 
+import android.content.ComponentName
+import android.content.Context
+import android.content.pm.PackageManager
+import rpt.tool.pongclock.R
 import rpt.tool.pongclock.utils.extensions.toColor
+import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
 import java.util.Calendar
 
 class AppUtils {
@@ -75,10 +80,10 @@ class AppUtils {
             val calendar = Calendar.getInstance()
             val holiday = getHoliday(calendar)
             
-            val isMatrix = rpt.tool.pongclock.utils.manager.SharedPreferencesManager.mode == 1
-            val isSeason = rpt.tool.pongclock.utils.manager.SharedPreferencesManager.season == 1
-            val isBreakout = rpt.tool.pongclock.utils.manager.SharedPreferencesManager.breakOut == 1
-            val isFuturistic = rpt.tool.pongclock.utils.manager.SharedPreferencesManager.futuristic == 1
+            val isMatrix = SharedPreferencesManager.mode == 1
+            val isSeason = SharedPreferencesManager.season == 1
+            val isBreakout = SharedPreferencesManager.breakOut == 1
+            val isFuturistic = SharedPreferencesManager.futuristic == 1
 
             var mainColor = ctx.getColor(rpt.tool.pongclock.R.color.white)
             var bgColor = ctx.getColor(rpt.tool.pongclock.R.color.black)
@@ -101,7 +106,6 @@ class AppUtils {
                         mainColor = ctx.getColor(rpt.tool.pongclock.R.color.white)
                         bgColor = ctx.getColor(rpt.tool.pongclock.R.color.worldcup_bg)
                     }
-                    else -> {}
                 }
             } else {
                 if (isMatrix) {
@@ -124,6 +128,120 @@ class AppUtils {
             }
             
             return Pair(mainColor, bgColor)
+        }
+
+        fun updateAppIcon(context: Context) {
+
+            val aliases = listOf(
+                "LauncherDefault",
+                "LauncherHalloween",
+                "LauncherChristmas",
+                "LauncherNewYear",
+                "LauncherWinter",
+                "LauncherSpring",
+                "LauncherSummer",
+                "LauncherFall"
+            )
+
+            val calendar = Calendar.getInstance()
+            val holiday = getHoliday(calendar)
+
+            val activeAlias = when (holiday) {
+                Holiday.Halloween -> "LauncherHalloween"
+                Holiday.Christmas -> "LauncherChristmas"
+                Holiday.NewYear -> "LauncherNewYear"
+                Holiday.WorldCup2026 -> "LauncherDefault"
+
+                Holiday.None -> {
+                    if (SharedPreferencesManager.season == 1) {
+                        when (getSeason(calendar.get(Calendar.DAY_OF_YEAR))) {
+                            Season.Winter -> "LauncherWinter"
+                            Season.Spring -> "LauncherSpring"
+                            Season.Summer -> "LauncherSummer"
+                            Season.Fall -> "LauncherFall"
+                        }
+                    } else {
+                        "LauncherDefault"
+                    }
+                }
+            }
+
+            val pm = context.packageManager
+
+            fun isComponentEnabled(component: ComponentName, isDefaultEnabled: Boolean): Boolean {
+                return try {
+                    when (pm.getComponentEnabledSetting(component)) {
+                        PackageManager.COMPONENT_ENABLED_STATE_ENABLED -> true
+                        PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                        PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER,
+                        PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED -> false
+                        else -> isDefaultEnabled
+                    }
+                } catch (_: Exception) {
+                    isDefaultEnabled
+                }
+            }
+
+            val activeComponent = ComponentName(
+                context.packageName,
+                "${context.packageName}.$activeAlias"
+            )
+
+            if (!isComponentEnabled(activeComponent, activeAlias == "LauncherDefault")) {
+                try {
+                    pm.setComponentEnabledSetting(
+                        activeComponent,
+                        PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                        PackageManager.DONT_KILL_APP
+                    )
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
+            aliases
+                .filter { it != activeAlias }
+                .forEach { alias ->
+                    val component = ComponentName(
+                        context.packageName,
+                        "${context.packageName}.$alias"
+                    )
+                    if (isComponentEnabled(component, alias == "LauncherDefault")) {
+                        try {
+                            pm.setComponentEnabledSetting(
+                                component,
+                                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                                PackageManager.DONT_KILL_APP
+                            )
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+        }
+
+        fun getPendingIconResId(): Int {
+            val calendar = Calendar.getInstance()
+            val holiday = getHoliday(calendar)
+
+            return when (holiday) {
+                Holiday.Halloween -> R.mipmap.ic_launcher_halloween
+                Holiday.Christmas -> R.mipmap.ic_launcher_christmas
+                Holiday.NewYear -> R.mipmap.ic_launcher_newyear
+                Holiday.WorldCup2026 -> R.mipmap.ic_launcher
+                Holiday.None -> {
+                    if (SharedPreferencesManager.season == 1) {
+                        when (getSeason(calendar.get(Calendar.DAY_OF_YEAR))) {
+                            Season.Winter -> R.mipmap.ic_launcher_winter
+                            Season.Spring -> R.mipmap.ic_launcher_spring
+                            Season.Summer -> R.mipmap.ic_launcher_summer
+                            Season.Fall -> R.mipmap.ic_launcher_fall
+                        }
+                    } else {
+                        R.mipmap.ic_launcher
+                    }
+                }
+            }
         }
     }
 }

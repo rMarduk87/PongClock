@@ -4,14 +4,16 @@ import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
+import android.widget.TextView
+import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.android.material.snackbar.Snackbar
 import rpt.com.base.BaseFragment
 import rpt.com.base.navigation.safeNavController
 import rpt.tool.pongclock.R
 import rpt.tool.pongclock.databinding.FragmentSettingsBinding
 import rpt.tool.pongclock.utils.AppUtils
-import rpt.tool.pongclock.utils.extensions.toColor
 import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
 import java.util.Calendar
 import kotlin.math.max
@@ -52,6 +54,7 @@ class SettingsFragment :
             }
             updateSwitches()
             applyTheme()
+            showIconFeedback()
         }
 
         binding.switchFuturisticMode.setOnCheckedChangeListener { _, isChecked ->
@@ -64,6 +67,7 @@ class SettingsFragment :
             }
             updateSwitches()
             applyTheme()
+            showIconFeedback()
         }
 
         binding.switchMatrixMode.setOnCheckedChangeListener { _, isChecked ->
@@ -76,6 +80,7 @@ class SettingsFragment :
             }
             updateSwitches()
             applyTheme()
+            showIconFeedback()
         }
 
         binding.switchSeasonMode.setOnCheckedChangeListener { _, isChecked ->
@@ -88,6 +93,7 @@ class SettingsFragment :
             }
             updateSwitches()
             applyTheme()
+            showIconFeedback()
         }
 
         binding.switchBreakoutMode.setOnCheckedChangeListener { _, isChecked ->
@@ -100,6 +106,7 @@ class SettingsFragment :
             }
             updateSwitches()
             applyTheme()
+            showIconFeedback()
         }
     }
 
@@ -152,8 +159,26 @@ class SettingsFragment :
         }
     }
 
+    private fun showIconFeedback() {
+        val iconResId = AppUtils.getPendingIconResId()
+
+        val snackbar = Snackbar.make(
+            binding.root,
+            getString(R.string.icon_update_on_close),
+            Snackbar.LENGTH_SHORT
+        )
+
+        val textView = snackbar.view.
+        findViewById<TextView>(com.google.android.material.R.id.snackbar_text)
+
+        textView.setCompoundDrawablesWithIntrinsicBounds(iconResId,
+            0, 0, 0)
+        textView.compoundDrawablePadding = 32
+
+        snackbar.show()
+    }
+
     override fun onDestroyView() {
-        // Clear listeners to avoid callbacks during/after destruction
         _binding?.let {
             it.switchClassicMode.setOnCheckedChangeListener(null)
             it.switchFuturisticMode.setOnCheckedChangeListener(null)
