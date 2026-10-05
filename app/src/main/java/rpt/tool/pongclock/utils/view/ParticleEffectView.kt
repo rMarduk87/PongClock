@@ -26,10 +26,11 @@ class ParticleEffectView(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
+        if (colors.isEmpty() || width <= 0 || height <= 0) return
+
         if (!isInitialized) {
             for (i in 0 until particleCount) {
-                particles.add(Particle(width.toFloat(), height.toFloat(),
-                    colors))
+                particles.add(Particle(width.toFloat(), height.toFloat(), colors))
             }
             isInitialized = true
         }
@@ -70,7 +71,7 @@ class ParticleEffectView(
         var alpha = Random.nextFloat() * 0.5f + 0.3f
         var rotation = Random.nextFloat() * 360f
         var rotationSpeed = Random.nextFloat() * 4f - 2f
-        val color = colors[Random.nextInt(colors.size)]
+        val color = if (colors.isNotEmpty()) colors[Random.nextInt(colors.size)] else 0
 
         fun update(width: Float, height: Float, speedMult: Float) {
             y += speedY * speedMult

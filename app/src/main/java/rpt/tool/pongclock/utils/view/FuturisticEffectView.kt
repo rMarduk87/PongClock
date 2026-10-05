@@ -3,12 +3,17 @@ package rpt.tool.pongclock.utils.view
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.util.AttributeSet
 import android.view.View
 import rpt.tool.pongclock.R
 import kotlin.math.hypot
 import kotlin.random.Random
 
-class FuturisticEffectView(context: Context) : View(context) {
+class FuturisticEffectView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { 
         color = context.getColor(R.color.cyan) 
     }
@@ -17,6 +22,8 @@ class FuturisticEffectView(context: Context) : View(context) {
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        if (width <= 0 || height <= 0) return
+
         if (!isInit) { 
             nodes.forEach { it.init(width.toFloat(), height.toFloat()) }
             isInit = true 
@@ -31,7 +38,7 @@ class FuturisticEffectView(context: Context) : View(context) {
             nodes.forEach { other ->
                 val dist = hypot(node.x - other.x, node.y - other.y)
                 if (dist < 150f) {
-                    paint.alpha = (255 * (1 - dist / 150f)).toInt()
+                    paint.alpha = (255 * (1 - dist / 150f)).toInt().coerceIn(0, 255)
                     paint.strokeWidth = 2f
                     canvas.drawLine(node.x, node.y, other.x,
                         other.y, paint)

@@ -20,8 +20,11 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-class PongTimeView(context: Context?, attrs: AttributeSet?) :
-    SurfaceView(context, attrs), SurfaceHolder.Callback {
+class PongTimeView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : SurfaceView(context, attrs, defStyleAttr), SurfaceHolder.Callback {
 
     private var thread: PongThread? = null
 
@@ -185,15 +188,21 @@ class PongTimeView(context: Context?, attrs: AttributeSet?) :
             panelPaint.strokeWidth = PANEL_LINE_WIDTH.toFloat()
             panelPaint.strokeCap = Paint.Cap.SQUARE
 
-            if (holiday == AppUtils.Companion.Holiday.Christmas) {
-                linePaint.color = ctx.getColor(R.color.christmas_red)
-                panelPaint.color = ctx.getColor(R.color.christmas_green)
-            } else if (holiday == AppUtils.Companion.Holiday.Halloween) {
-                linePaint.color = ctx.getColor(R.color.halloween_orange)
-                panelPaint.color = ctx.getColor(R.color.halloween_orange)
-            } else if (holiday == AppUtils.Companion.Holiday.WorldCup2026) {
-                linePaint.color = ctx.getColor(R.color.white)
-                panelPaint.color = ctx.getColor(R.color.worldcup_gold)
+            when (holiday) {
+                AppUtils.Companion.Holiday.Christmas -> {
+                    linePaint.color = ctx.getColor(R.color.christmas_red)
+                    panelPaint.color = ctx.getColor(R.color.christmas_green)
+                }
+                AppUtils.Companion.Holiday.Halloween -> {
+                    linePaint.color = ctx.getColor(R.color.halloween_orange)
+                    panelPaint.color = ctx.getColor(R.color.halloween_orange)
+                }
+                AppUtils.Companion.Holiday.WorldCup2026 -> {
+                    linePaint.color = ctx.getColor(R.color.white)
+                    panelPaint.color = ctx.getColor(R.color.worldcup_gold)
+                }
+
+                else -> {}
             }
 
             if (!isClassic) {

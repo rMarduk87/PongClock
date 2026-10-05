@@ -3,13 +3,18 @@ package rpt.tool.pongclock.utils.view
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.util.AttributeSet
 import android.view.View
 import rpt.tool.pongclock.R
 import java.util.*
 import kotlin.math.cos
 import kotlin.math.sin
 
-class FireworksEffectView(context: Context) : View(context) {
+class FireworksEffectView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val random = Random()
     private val sparks = mutableListOf<Spark>()
@@ -18,6 +23,7 @@ class FireworksEffectView(context: Context) : View(context) {
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        if (width <= 0 || height <= 0) return
 
         if (random.nextFloat() > 0.95) {
             val cx = random.nextFloat() * width
@@ -39,11 +45,11 @@ class FireworksEffectView(context: Context) : View(context) {
         while (iterator.hasNext()) {
             val s = iterator.next()
             paint.color = s.color
-            paint.alpha = s.alpha
+            paint.alpha = s.alpha.coerceIn(0, 255)
             canvas.drawCircle(s.x, s.y, 4f, paint)
             s.x += s.vx
             s.y += s.vy
-            s.vy += 0.2f // Gravità
+            s.vy += 0.2f
             s.alpha -= 5
             if (s.alpha <= 0) iterator.remove()
         }

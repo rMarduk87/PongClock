@@ -3,11 +3,16 @@ package rpt.tool.pongclock.utils.view
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.util.AttributeSet
 import android.view.View
 import rpt.tool.pongclock.R
 import java.util.*
 
-class SnowEffectView(context: Context) : View(context) {
+class SnowEffectView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = context.getColor(R.color.white)
     }
@@ -18,6 +23,7 @@ class SnowEffectView(context: Context) : View(context) {
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        if (width <= 0 || height <= 0) return
 
         if (flakes.size < 100) {
             flakes.add(Flake(random.nextFloat() * width, -10f, random.nextFloat() * 5 + 2, random.nextFloat() * 8 + 4))
