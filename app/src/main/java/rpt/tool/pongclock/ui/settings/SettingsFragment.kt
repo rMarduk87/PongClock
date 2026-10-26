@@ -1,11 +1,9 @@
 package rpt.tool.pongclock.ui.settings
 
-import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.snackbar.Snackbar
@@ -15,13 +13,11 @@ import rpt.tool.pongclock.R
 import rpt.tool.pongclock.databinding.FragmentSettingsBinding
 import rpt.tool.pongclock.utils.AppUtils
 import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
-import java.util.Calendar
 import kotlin.math.max
 
 class SettingsFragment :
     BaseFragment<FragmentSettingsBinding>(FragmentSettingsBinding::inflate,true) {
 
-    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -107,6 +103,12 @@ class SettingsFragment :
             updateSwitches()
             applyTheme()
             showIconFeedback()
+        }
+
+        binding.buttonExtraMode.setOnClickListener { _ ->
+            safeNavController(R.id.main_activity_nav_host_fragment)?.navigate(
+                SettingsFragmentDirections
+                    .actionSettingsFragmentToExtraSettingsFragment())
         }
     }
 

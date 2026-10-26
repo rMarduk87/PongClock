@@ -65,6 +65,13 @@
     <color name="fall_leaf_1">#D2691E</color>
     <color name="fall_leaf_2">#8B4513</color>
 
+    <!-- Glitch / Space / Black Hole Colors -->
+    <color name="cyberpunk_green">#00FF66</color>
+    <color name="glitch_bg">#0A0014</color>
+    <color name="acid_purple">#9900FF</color>
+    <color name="shocking_pink">#FF007F</color>
+    <color name="black_hole_cyan">#00FFFF</color>
+
     <color name="festive_overlay">#5000FF00</color>
     <color name="matrix_dim_bg">#28000000</color>
     <color name="transparent">#00000000</color>

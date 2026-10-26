@@ -35,4 +35,12 @@ object SharedPreferencesManager {
     var futuristic: Int
         get() = sharedPreferences.getInt(AppUtils.FUTURISTIC_MODE, 1) // Default to 1
         set(value) = sharedPreferences.edit { putInt(AppUtils.FUTURISTIC_MODE, value) }
+
+    var glitch: Int
+        get() = sharedPreferences.getInt(AppUtils.GLITCH_MODE, 0)
+        set(value) = sharedPreferences.edit { putInt(AppUtils.GLITCH_MODE, value) }
+
+    var noGravity: Int
+        get() = sharedPreferences.getInt(AppUtils.NO_GRAVITY_MODE, 0)
+        set(value) = sharedPreferences.edit { putInt(AppUtils.NO_GRAVITY_MODE, value) }
 }

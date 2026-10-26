@@ -16,6 +16,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.LinkedList
 import kotlin.math.abs
+import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
@@ -81,8 +82,14 @@ class PongTimeView @JvmOverloads constructor(
         private var isBreakout = false
         private var isSeason = false
         private var isFuturistic = false
+        private var isGlitch = false
+        private var isNoGravity = false
+        private var glitchTimer = 0
         private var holiday = AppUtils.Companion.Holiday.None
         private var currentSeason = AppUtils.Companion.Season.Winter
+
+        internal inner class Star(var x: Float, var y: Float, var speed: Float, var size: Float, var alpha: Int)
+        private val stars = mutableListOf<Star>()
 
         private val particles = mutableListOf<FxParticle>()
         private val ballTrail = LinkedList<PointF>()
@@ -167,6 +174,8 @@ class PongTimeView @JvmOverloads constructor(
             isBreakout = SharedPreferencesManager.breakOut == 1
             isSeason = SharedPreferencesManager.season == 1
             isFuturistic = SharedPreferencesManager.futuristic == 1
+            isGlitch = SharedPreferencesManager.glitch == 1
+            isNoGravity = SharedPreferencesManager.noGravity == 1
             
             // Classic è il default
             isClassic = (SharedPreferencesManager.classic == 1 || (!isMatrix && !isBreakout && !isSeason && !isFuturistic)) && holiday ==
@@ -238,6 +247,21 @@ class PongTimeView @JvmOverloads constructor(
                 numberPaint.clearShadowLayer()
                 pinkLinePaint.clearShadowLayer()
             }
+
+            if (isGlitch) {
+                mainColor = ctx.getColor(R.color.cyberpunk_green)
+                bgColor = ctx.getColor(R.color.glitch_bg)
+                linePaint.color = ctx.getColor(R.color.acid_purple)
+                panelPaint.color = ctx.getColor(R.color.shocking_pink)
+                dashedLinePaint.color = ctx.getColor(R.color.cyberpunk_green)
+                numberPaint.color = ctx.getColor(R.color.cyberpunk_green)
+                pinkLinePaint.color = ctx.getColor(R.color.shocking_pink)
+
+                linePaint.setShadowLayer(25f, 0f, 0f, linePaint.color)
+                panelPaint.setShadowLayer(25f, 0f, 0f, panelPaint.color)
+                numberPaint.setShadowLayer(35f, 0f, 0f, numberPaint.color)
+                pinkLinePaint.setShadowLayer(25f, 0f, 0f, pinkLinePaint.color)
+            }
         }
 
         fun setSurfaceSize(width: Int, height: Int) {
@@ -257,6 +281,19 @@ class PongTimeView @JvmOverloads constructor(
                 leftPanel = Panel(panelXPos.toInt(), canvasHeight2)
                 rightPanel = Panel((width - panelXPos).toInt(), canvasHeight2)
                 ball = Ball(canvasWidth2.toFloat(), canvasHeight2.toFloat())
+
+                stars.clear()
+                for (i in 0 until 80) {
+                    stars.add(
+                        Star(
+                            Random.nextFloat() * width,
+                            Random.nextFloat() * height,
+                            Random.nextFloat() * 2f + 0.5f,
+                            Random.nextFloat() * 3f + 1f,
+                            Random.nextInt(150) + 100
+                        )
+                    )
+                }
 
                 numberScale = (width / 200f).coerceIn(3f, 8f)
                 val numWidth = LW * numberScale
@@ -297,6 +334,23 @@ class PongTimeView @JvmOverloads constructor(
             if (!isClassic && !isBreakout) {
                 ballTrail.addFirst(PointF(b.x, b.y))
                 if (ballTrail.size > 8) ballTrail.removeLast()
+            }
+
+            if (isNoGravity) {
+                stars.forEach { s ->
+                    s.x -= s.speed
+                    if (s.x < 0) {
+                        s.x = canvasWidth.toFloat()
+                        s.y = Random.nextFloat() * canvasHeight
+                    }
+                }
+                val cx = canvasWidth2.toFloat()
+                val cy = canvasHeight2.toFloat()
+                val dx = cx - b.x
+                val dy = cy - b.y
+                val targetAngle = atan2(dy.toDouble(), dx.toDouble()).toFloat()
+                b.direction += (targetAngle - b.direction) * 0.05f
+                b.computeDir()
             }
 
             val distance = ballSpeed / (1000 / deltaMillis)
@@ -361,8 +415,12 @@ class PongTimeView @JvmOverloads constructor(
 
         private fun onPaddleHit(x: Float, y: Float) {
             val ctx = context ?: return
+            if (isGlitch) {
+                glitchTimer = 8
+            }
             if (holiday == AppUtils.Companion.Holiday.NewYear) {
-                val sparkColor = listOf(ctx.getColor(R.color.yellow), ctx.getColor(R.color.white), ctx.getColor(
+                val sparkColor = listOf(ctx.getColor(R.color.yellow), ctx.getColor(
+                    R.color.white), ctx.getColor(
                     R.color.newyear_gold)).random()
                 for (i in 0..15) {
                     particles.add(FxParticle(x, y, (Random.nextFloat() - 0.5f) * 10f,
@@ -370,7 +428,8 @@ class PongTimeView @JvmOverloads constructor(
                         "", sparkColor))
                 }
             } else if (holiday == AppUtils.Companion.Holiday.WorldCup2026) {
-                val grassColor = listOf(ctx.getColor(R.color.green), ctx.getColor(R.color.worldcup_pitch)).random()
+                val grassColor = listOf(ctx.getColor(R.color.green), ctx.getColor(
+                    R.color.worldcup_pitch)).random()
                 for (i in 0..10) {
                     particles.add(FxParticle(x, y, (Random.nextFloat() - 0.5f) * 8f,
                         (Random.nextFloat() - 0.5f) * 8f, 1f, 1f, 3,
@@ -437,7 +496,48 @@ class PongTimeView @JvmOverloads constructor(
         private fun doDraw(canvas: Canvas?) {
             if (canvas == null) return
             val ctx = context ?: return
-            canvas.drawColor(bgColor)
+
+            if (isGlitch) {
+                if (glitchTimer > 0) glitchTimer--
+                val shakeX = if (glitchTimer > 0 || Math.random() < 0.15) (Math.random() * 20 -
+                        10).toFloat() else 0f
+                val shakeY = if (glitchTimer > 0 || Math.random() < 0.15) (Math.random() * 20 -
+                        10).toFloat() else 0f
+                canvas.save()
+                canvas.translate(shakeX, shakeY)
+            }
+
+            if (isNoGravity) {
+                canvas.drawColor(Color.BLACK)
+                val starPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE }
+                stars.forEach { s ->
+                    starPaint.alpha = s.alpha
+                    canvas.drawCircle(s.x, s.y, s.size, starPaint)
+                }
+
+                val cx = canvasWidth2.toFloat()
+                val cy = canvasHeight2.toFloat()
+                val bhRadius = 45f
+
+                val glowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    style = Paint.Style.STROKE
+                    strokeWidth = 6f
+                }
+                glowPaint.color = ctx.getColor(R.color.acid_purple)
+                canvas.drawCircle(cx, cy, bhRadius + 20f, glowPaint)
+                glowPaint.color = ctx.getColor(R.color.black_hole_cyan)
+                canvas.drawCircle(cx, cy, bhRadius + 10f, glowPaint)
+                glowPaint.color = ctx.getColor(R.color.newyear_gold)
+                canvas.drawCircle(cx, cy, bhRadius, glowPaint)
+
+                val corePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    style = Paint.Style.FILL
+                    color = Color.BLACK
+                }
+                canvas.drawCircle(cx, cy, bhRadius - 2f, corePaint)
+            } else {
+                canvas.drawColor(bgColor)
+            }
 
             if (!isClassic && !isBreakout) {
                 val step = 100
@@ -448,9 +548,11 @@ class PongTimeView @JvmOverloads constructor(
             }
             particles.forEach { p ->
                 when (p.type) {
-                    1 -> { particlePaint.color = ctx.getColor(R.color.white); canvas.drawCircle(p.x,
+                    1 -> { particlePaint.color = ctx.getColor(R.color.white);
+                        canvas.drawCircle(p.x,
                         p.y, 4f, particlePaint) }
-                    2 -> { particlePaint.color = ctx.getColor(R.color.matrix); particlePaint.textSize = 30f; canvas.drawText(p.extra, p.x,
+                    2 -> { particlePaint.color = ctx.getColor(R.color.matrix);
+                        particlePaint.textSize = 30f; canvas.drawText(p.extra, p.x,
                         p.y, particlePaint) }
                     3 -> { particlePaint.color = p.color; particlePaint.alpha = (p.life * 255)
                         .toInt().coerceIn(0, 255); canvas.drawCircle(p.x, p.y, 5f,
@@ -498,7 +600,8 @@ class PongTimeView @JvmOverloads constructor(
                         strokeWidth = 4f
                         alpha = 100
                     }
-                    canvas.drawCircle(canvasWidth2.toFloat(), canvasHeight2.toFloat(), canvasHeight * 0.15f, pitchPaint)
+                    canvas.drawCircle(canvasWidth2.toFloat(), canvasHeight2.toFloat(),
+                        canvasHeight * 0.15f, pitchPaint)
                 }
             }
 
@@ -548,9 +651,11 @@ class PongTimeView @JvmOverloads constructor(
                 // Futuristic Trail Effect
                 if (isFuturistic) {
                     ballTrail.forEachIndexed { index, point ->
-                        panelPaint.color = if (index < 3) ctx.getColor(R.color.neon_pink) else ctx.getColor(R.color.modern_cyan)
+                        panelPaint.color = if (index < 3) ctx.getColor(R.color.neon_pink)
+                        else ctx.getColor(R.color.modern_cyan)
                         panelPaint.alpha = 255 - (index * 30)
-                        canvas.drawRect(point.x - 8, point.y - 8, point.x + 8, point.y + 8, panelPaint)
+                        canvas.drawRect(point.x - 8, point.y - 8, point.x + 8,
+                            point.y + 8, panelPaint)
                     }
                     panelPaint.color = ctx.getColor(R.color.modern_cyan)
                 } else {
@@ -598,6 +703,30 @@ class PongTimeView @JvmOverloads constructor(
             drawNum(canvas, number2X, currentHours % 10)
             drawNum(canvas, number3X, currentMinutes / 10)
             drawNum(canvas, number4X, currentMinutes % 10)
+
+            if (isGlitch) {
+                val scanlinePaint = Paint().apply {
+                    color = Color.argb(60, 0, 0, 0)
+                    strokeWidth = 2f
+                }
+                for (y in 0..canvasHeight step 4) {
+                    canvas.drawLine(0f, y.toFloat(), canvasWidth.toFloat(),
+                        y.toFloat(), scanlinePaint)
+                }
+
+                if (ballTrail.isNotEmpty()) {
+                    val ghost = ballTrail.lastOrNull()
+                    if (ghost != null) {
+                        val ghostPaint = Paint(panelPaint).apply {
+                            alpha = 100
+                            color = ctx.getColor(R.color.shocking_pink)
+                        }
+                        canvas.drawCircle(ghost.x + (Math.random() * 30 - 15).toFloat(),
+                            ghost.y + (Math.random() * 30 - 15).toFloat(), 15f, ghostPaint)
+                    }
+                }
+                canvas.restore()
+            }
         }
 
         private fun drawNum(canvas: Canvas, x: Int, n: Int) {
@@ -645,12 +774,14 @@ class PongTimeView @JvmOverloads constructor(
         val isSeason = SharedPreferencesManager.season == 1
         val isBreakout = SharedPreferencesManager.breakOut == 1
         val isFuturistic = SharedPreferencesManager.futuristic == 1
-        val isClassic = SharedPreferencesManager.classic == 1 || (!isMatrix && !isSeason && !isBreakout && !isFuturistic)
+        val isClassic = SharedPreferencesManager.classic == 1 || (!isMatrix &&
+                !isSeason && !isBreakout && !isFuturistic)
 
         var color = ctx.getColor(R.color.white) // Classic default
         if (isClassic) color = ctx.getColor(R.color.white)
         else if (isMatrix) color = ctx.getColor(R.color.matrix)
-        else if (isSeason) color = ctx.getColor(AppUtils.getSeason(calendar[Calendar.DAY_OF_YEAR]).toColor())
+        else if (isSeason) color = ctx.getColor(AppUtils.getSeason(
+            calendar[Calendar.DAY_OF_YEAR]).toColor())
         else if (isFuturistic) color = ctx.getColor(R.color.modern_cyan)
 
         return color

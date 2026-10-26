@@ -18,6 +18,8 @@ class AppUtils {
         const val BREAKOUT_MODE : String = "breakout_mode"
         const val CLASSIC_MODE : String = "classic_mode"
         const val FUTURISTIC_MODE : String = "futuristic_mode"
+        const val GLITCH_MODE : String = "glitch_mode"
+        const val NO_GRAVITY_MODE : String = "no_gravity_mode"
         const val DAY_SPRING_MIN = 80
         const val DAY_SPRING_MAX = 172
         const val DAY_SUMMER_MIN = DAY_SPRING_MAX

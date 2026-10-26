@@ -28,6 +28,9 @@
             app:destination="@id/breakOutClockFragment"
             app:popUpTo="@id/clockFragment"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_clockFragment_to_extraModeClockFragment"
+            app:destination="@id/extraModeClockFragment" />
     </fragment>
 
     <fragment
@@ -38,5 +41,23 @@
     <fragment
         android:id="@+id/settingsFragment"
         android:name="rpt.tool.pongclock.ui.settings.SettingsFragment"
-        android:label="SettingsFragment" />
+        android:label="SettingsFragment" >
+        <action
+            android:id="@+id/action_settingsFragment_to_extraSettingsFragment"
+            app:destination="@id/extraSettingsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/extraSettingsFragment"
+        android:name="rpt.tool.pongclock.ui.settings.ExtraSettingsFragment"
+        android:label="ExtraSettingsFragment" >
+        <action
+            android:id="@+id/action_extraSettingsFragment_to_clockFragment"
+            app:destination="@id/clockFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/extraModeClockFragment"
+        android:name="rpt.tool.pongclock.ui.extra.ExtraModeClockFragment"
+        android:label="ExtraModeClockFragment" />
 </navigation>
