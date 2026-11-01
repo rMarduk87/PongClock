@@ -37,8 +37,8 @@ class ExtraSettingsFragment : BaseFragment<FragmentExtraSettingsBinding>(
 
         binding.toolbar.setNavigationOnClickListener {
             safeNavController(R.id.main_activity_nav_host_fragment)?.safeNavigate(
-                ExtraSettingsFragmentDirections
-                    .actionExtraSettingsFragmentToClockFragment())
+                ExtraSettingsFragmentDirections.actionExtraSettingsFragmentToSettingsFragment()
+            )
         }
 
         updateSwitches()
@@ -54,7 +54,6 @@ class ExtraSettingsFragment : BaseFragment<FragmentExtraSettingsBinding>(
             }
             updateSwitches()
             applyTheme()
-            showIconFeedback()
         }
 
         binding.switchNoGravityMode.setOnCheckedChangeListener { _, isChecked ->
@@ -67,7 +66,6 @@ class ExtraSettingsFragment : BaseFragment<FragmentExtraSettingsBinding>(
             }
             updateSwitches()
             applyTheme()
-            showIconFeedback()
         }
     }
 
@@ -116,25 +114,6 @@ class ExtraSettingsFragment : BaseFragment<FragmentExtraSettingsBinding>(
                 sw.trackTintList = ColorStateList.valueOf(accentColor).withAlpha(100)
             }
         }
-    }
-
-    private fun showIconFeedback() {
-        val iconResId = AppUtils.getPendingIconResId()
-
-        val snackbar = Snackbar.make(
-            binding.root,
-            getString(R.string.icon_update_on_close),
-            Snackbar.LENGTH_SHORT
-        )
-
-        val textView = snackbar.view.
-        findViewById<TextView>(com.google.android.material.R.id.snackbar_text)
-
-        textView.setCompoundDrawablesWithIntrinsicBounds(iconResId,
-            0, 0, 0)
-        textView.compoundDrawablePadding = 32
-
-        snackbar.show()
     }
 
     override fun onDestroyView() {

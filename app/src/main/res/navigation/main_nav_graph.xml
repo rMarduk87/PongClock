@@ -45,6 +45,9 @@
         <action
             android:id="@+id/action_settingsFragment_to_extraSettingsFragment"
             app:destination="@id/extraSettingsFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_menuFragment"
+            app:destination="@id/menuFragment" />
     </fragment>
 
     <fragment
@@ -52,8 +55,8 @@
         android:name="rpt.tool.pongclock.ui.settings.ExtraSettingsFragment"
         android:label="ExtraSettingsFragment" >
         <action
-            android:id="@+id/action_extraSettingsFragment_to_clockFragment"
-            app:destination="@id/clockFragment" />
+            android:id="@+id/action_extraSettingsFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
     </fragment>
 
     <fragment

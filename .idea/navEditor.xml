@@ -13,8 +13,8 @@
                       <LayoutPositions>
                         <option name="myPosition">
                           <Point>
-                            <option name="x" value="256" />
-                            <option name="y" value="12" />
+                            <option name="x" value="258" />
+                            <option name="y" value="-265" />
                           </Point>
                         </option>
                       </LayoutPositions>
@@ -32,6 +32,11 @@
                         <option name="myPositions">
                           <map>
                             <entry key="action_clockFragment_to_breakOutClockFragment">
+                              <value>
+                                <LayoutPositions />
+                              </value>
+                            </entry>
+                            <entry key="action_clockFragment_to_extraModeClockFragment">
                               <value>
                                 <LayoutPositions />
                               </value>
@@ -64,7 +69,7 @@
                         </option>
                         <option name="myPositions">
                           <map>
-                            <entry key="action_extraSettingsFragment_to_clockFragment">
+                            <entry key="action_extraSettingsFragment_to_settingsFragment">
                               <value>
                                 <LayoutPositions />
                               </value>

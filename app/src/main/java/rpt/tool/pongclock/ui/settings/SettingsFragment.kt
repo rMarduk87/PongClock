@@ -35,7 +35,9 @@ class SettingsFragment :
         }
 
         binding.toolbar.setNavigationOnClickListener {
-            safeNavController(R.id.main_activity_nav_host_fragment)?.popBackStack() }
+            safeNavController(R.id.main_activity_nav_host_fragment)?.
+            navigate(SettingsFragmentDirections.actionSettingsFragmentToMenuFragment())
+        }
 
         updateSwitches()
         applyTheme()
@@ -118,6 +120,8 @@ class SettingsFragment :
         SharedPreferencesManager.mode = 0
         SharedPreferencesManager.season = 0
         SharedPreferencesManager.breakOut = 0
+        SharedPreferencesManager.glitch = 0
+        SharedPreferencesManager.noGravity = 0
     }
 
     private fun updateSwitches() {
@@ -146,7 +150,8 @@ class SettingsFragment :
             it.modeCard.setCardBackgroundColor(bgColor)
             it.modeCard.strokeColor = mainColor
 
-            val textViews = listOf(it.lblClassic, it.lblFuturistic, it.lblActive, it.lblFix, it.lblBreakout)
+            val textViews = listOf(it.lblClassic, it.lblFuturistic, it.lblActive, it.lblFix,
+                it.lblBreakout, it.lblExtra)
             textViews.forEach { tv -> tv.setTextColor(mainColor) }
 
             val switches = listOf(
@@ -158,6 +163,8 @@ class SettingsFragment :
                 sw.thumbTintList = ColorStateList.valueOf(accentColor)
                 sw.trackTintList = ColorStateList.valueOf(accentColor).withAlpha(100)
             }
+
+            binding.buttonExtraMode.iconTint = ColorStateList.valueOf(accentColor)
         }
     }
 
