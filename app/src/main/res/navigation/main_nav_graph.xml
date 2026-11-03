@@ -15,6 +15,9 @@
             android:id="@+id/action_menuFragment_to_breakOutClockFragment"
             app:destination="@id/breakOutClockFragment" />
         <action
+            android:id="@+id/action_menuFragment_to_extraModeClockFragment"
+            app:destination="@id/extraModeClockFragment" />
+        <action
             android:id="@+id/action_menuFragment_to_settingsFragment"
             app:destination="@id/settingsFragment" />
     </fragment>
@@ -30,7 +33,9 @@
             app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_clockFragment_to_extraModeClockFragment"
-            app:destination="@id/extraModeClockFragment" />
+            app:destination="@id/extraModeClockFragment"
+            app:popUpTo="@id/clockFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
