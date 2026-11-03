@@ -39,6 +39,12 @@ class PongTimeView @JvmOverloads constructor(
         var direction: Float = 0f
         var cosDir: Float = 0f
         var sinDir: Float = 0f
+
+        var speedMultiplier: Float = 1f
+        var alpha: Int = 255
+        var anomalyTimer: Int = 0
+        var lastHitBy: Int = 0
+
         fun computeDir() {
             cosDir = cos(direction.toDouble()).toFloat()
             sinDir = sin(direction.toDouble()).toFloat()
@@ -80,7 +86,6 @@ class PongTimeView @JvmOverloads constructor(
         private var ballSpeed = 300f
         private var panelSpeed = 250f
 
-        // Variabili di stato fondamentali ripristinate
         private var gMode = GSTATE_PLAY
         private var nextTimeUpdate: Long = 0
         private var lastTimeMillis: Long = 0
@@ -98,13 +103,17 @@ class PongTimeView @JvmOverloads constructor(
         private var currentSeason: Any? = null
 
         internal inner class Star(var x: Float, var y: Float, var speed: Float, var size: Float, var alpha: Int)
+        internal inner class Planet(var x: Float, var y: Float, var speed: Float, var size: Float, var color: Int, var hasRing: Boolean)
+
         private val stars = mutableListOf<Star>()
+        private val planets = mutableListOf<Planet>()
         private val particles = mutableListOf<FxParticle>()
 
         private val trailX = FloatArray(8)
         private val trailY = FloatArray(8)
         private var trailSize = 0
 
+        // --- OGGETTI GRAFICI OTTIMIZZATI --- (Allocati una sola volta per evitare il crash di memoria)
         private val dashedLinePaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val numberPaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -116,16 +125,34 @@ class PongTimeView @JvmOverloads constructor(
 
         private val scanlinePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.argb(60, 0, 0, 0)
-            strokeWidth = 2f
+            strokeWidth = 4f // Più spessa, così ne disegniamo meno e ottimizziamo
         }
         private val ghostPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { alpha = 100 }
 
+        // Elementi Buco Nero Pre-Allocati
+        private val starPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE }
+        private val planetPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        private val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = 3f }
+        private val haloPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+        private val diskPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = 14f; alpha = 180 }
+        private val corePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.BLACK }
+        private val photonRingPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = 2f; color = Color.WHITE; alpha = 150 }
+
+        private val planetRingRect = RectF()
+        private val diskRect = RectF()
+
+        // Colori Cacheati
         private var bgColor = Color.BLACK
         private var mainColor = Color.WHITE
         private var cWhite = Color.WHITE
         private var cMatrix = Color.GREEN
         private var cNeonPink = Color.MAGENTA
         private var cModernCyan = Color.CYAN
+        private var cBrickBlue = Color.BLUE
+        private var cBrickRed = Color.RED
+        private var cAcidPurple = Color.MAGENTA
+        private var cBlackHoleCyan = Color.CYAN
+        private var cNewYearGold = Color.YELLOW
         private val cBrickColors = IntArray(5)
 
         private val matrixChars = arrayOf("0", "1")
@@ -186,10 +213,16 @@ class PongTimeView @JvmOverloads constructor(
 
             isClassic = (SharedPreferencesManager.classic == 1 || (!isMatrix && !isBreakout && !isSeason && !isFuturistic && !isGlitch && !isNoGravity))
 
+            // Cache dei colori per non rallentare mai il loop di rendering
             cWhite = colorCompat(R.color.white)
             cMatrix = colorCompat(R.color.matrix)
             cNeonPink = colorCompat(R.color.neon_pink)
             cModernCyan = colorCompat(R.color.modern_cyan)
+            cBrickBlue = colorCompat(R.color.brick_blue)
+            cBrickRed = colorCompat(R.color.brick_red)
+            cAcidPurple = colorCompat(R.color.acid_purple)
+            cBlackHoleCyan = colorCompat(R.color.black_hole_cyan)
+            cNewYearGold = colorCompat(R.color.newyear_gold)
 
             cBrickColors[0] = colorCompat(R.color.red)
             cBrickColors[1] = colorCompat(R.color.orange)
@@ -199,7 +232,7 @@ class PongTimeView @JvmOverloads constructor(
 
             newYearColors[0] = colorCompat(R.color.yellow)
             newYearColors[1] = cWhite
-            newYearColors[2] = colorCompat(R.color.newyear_gold)
+            newYearColors[2] = cNewYearGold
 
             worldCupColors[0] = colorCompat(R.color.green)
             worldCupColors[1] = colorCompat(R.color.worldcup_pitch)
@@ -236,7 +269,7 @@ class PongTimeView @JvmOverloads constructor(
             if (isGlitch) {
                 mainColor = colorCompat(R.color.cyberpunk_green)
                 bgColor = colorCompat(R.color.glitch_bg)
-                linePaint.color = colorCompat(R.color.acid_purple)
+                linePaint.color = cAcidPurple
                 panelPaint.color = colorCompat(R.color.shocking_pink)
                 dashedLinePaint.color = colorCompat(R.color.cyberpunk_green)
                 numberPaint.color = colorCompat(R.color.cyberpunk_green)
@@ -274,11 +307,37 @@ class PongTimeView @JvmOverloads constructor(
             rightPanel = Panel((w - panelXPos).toInt(), canvasHeight2)
             ball = Ball(canvasWidth2.toFloat(), canvasHeight2.toFloat())
 
+            // Aggiornamento oggetti spaziali leggeri
             stars.clear()
             for (i in 0 until 80) {
                 stars.add(Star(Random.nextFloat() * w, Random.nextFloat() * h,
                     Random.nextFloat() * 2f + 0.5f, Random.nextFloat() * 3f + 1f, Random.nextInt(150) + 100))
             }
+
+            planets.clear()
+            val pColors = intArrayOf(Color.parseColor("#E08E36"), Color.parseColor("#4285F4"), Color.parseColor("#9C27B0"), Color.parseColor("#00BCD4"))
+            for(i in 0 until 4) {
+                planets.add(Planet(
+                    Random.nextFloat() * w,
+                    Random.nextFloat() * h,
+                    Random.nextFloat() * 1.5f + 0.5f,
+                    Random.nextFloat() * 15f + 10f,
+                    pColors[Random.nextInt(pColors.size)],
+                    Random.nextBoolean()
+                ))
+            }
+
+            // Preparazione statica degli asset visivi del buco nero (fondamentale per evitare crash di memoria)
+            val cx = canvasWidth2.toFloat()
+            val cy = canvasHeight2.toFloat()
+            val bhRadius = 45f
+            haloPaint.shader = RadialGradient(
+                cx, cy, bhRadius * 2.8f,
+                intArrayOf(Color.TRANSPARENT, cAcidPurple, cBlackHoleCyan, Color.TRANSPARENT),
+                floatArrayOf(0f, 0.4f, 0.7f, 1f),
+                Shader.TileMode.CLAMP
+            )
+            diskRect.set(cx - bhRadius * 2.6f, cy - bhRadius * 0.8f, cx + bhRadius * 2.6f, cy + bhRadius * 0.8f)
 
             numberScale = (w / 200f).coerceIn(3f, 8f)
             val numWidth = LW * numberScale
@@ -304,6 +363,12 @@ class PongTimeView @JvmOverloads constructor(
             val d = (Math.random() * 0.8 - 0.4).toFloat()
             ball?.direction = if (left) 0.0f + d else Math.PI.toFloat() + d
             ball?.computeDir()
+
+            ball?.speedMultiplier = 1f
+            ball?.alpha = 255
+            ball?.anomalyTimer = 0
+            ball?.lastHitBy = 0
+
             trailSize = 0
         }
 
@@ -313,6 +378,8 @@ class PongTimeView @JvmOverloads constructor(
 
             if (gMode == GSTATE_STOPPED || gMode == GSTATE_NONE) return
             val b = ball ?: return
+            val lp = leftPanel ?: return
+            val rp = rightPanel ?: return
 
             if (!isClassic && !isBreakout) {
                 for (i in 7 downTo 1) {
@@ -332,20 +399,77 @@ class PongTimeView @JvmOverloads constructor(
                         s.y = Random.nextFloat() * canvasHeight
                     }
                 }
+                planets.forEach { p ->
+                    p.x -= p.speed
+                    if (p.x + p.size * 2 < 0) {
+                        p.x = canvasWidth.toFloat() + p.size * 2
+                        p.y = Random.nextFloat() * canvasHeight
+                    }
+                }
+
                 val cx = canvasWidth2.toFloat()
                 val cy = canvasHeight2.toFloat()
                 val dx = cx - b.x
                 val dy = cy - b.y
-                val targetAngle = atan2(dy.toDouble(), dx.toDouble()).toFloat()
-                b.direction += (targetAngle - b.direction) * 0.05f
-                b.computeDir()
+                val distCenterSq = dx * dx + dy * dy
+                val anomalyZoneRadius = 150f
+                val anomalyZoneSq = anomalyZoneRadius * anomalyZoneRadius
+
+                if (gMode == GSTATE_PLAY) {
+                    if (b.anomalyTimer > 0) {
+                        b.anomalyTimer -= deltaMillis.toInt()
+                        if (b.anomalyTimer <= 0) {
+                            b.speedMultiplier = 1f
+                            b.alpha = 255
+                            b.anomalyTimer = 0
+                        } else if (b.alpha < 255) {
+                            b.alpha = if (Random.nextFloat() > 0.6f) 80 else 0
+                        }
+                    } else if (distCenterSq < anomalyZoneSq && Random.nextFloat() < 0.05f) {
+                        val effect = Random.nextInt(3)
+                        b.anomalyTimer = Random.nextInt(1000) + 800
+
+                        when (effect) {
+                            0 -> b.speedMultiplier = if (Random.nextBoolean()) 0.3f else 1.8f
+                            1 -> b.alpha = 0
+                            2 -> {
+                                if (b.lastHitBy == 1) {
+                                    b.direction = atan2(lp.y - b.y, lp.x - b.x).toFloat()
+                                    b.computeDir()
+                                    b.speedMultiplier = 2.0f
+                                    b.anomalyTimer = 600
+                                    for (i in 0..6) particles.add(FxParticle(b.x, b.y, (Random.nextFloat() - 0.5f) * 8f, (Random.nextFloat() - 0.5f) * 8f, 1f, 1f, 3, "", cModernCyan))
+                                } else if (b.lastHitBy == 2) {
+                                    b.direction = atan2(rp.y - b.y, rp.x - b.x).toFloat()
+                                    b.computeDir()
+                                    b.speedMultiplier = 2.0f
+                                    b.anomalyTimer = 600
+                                    for (i in 0..6) particles.add(FxParticle(b.x, b.y, (Random.nextFloat() - 0.5f) * 8f, (Random.nextFloat() - 0.5f) * 8f, 1f, 1f, 3, "", cModernCyan))
+                                } else {
+                                    b.anomalyTimer = 0
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (distCenterSq > 100f) {
+                    val targetAngle = atan2(dy.toDouble(), dx.toDouble()).toFloat()
+                    var angleDiff = (targetAngle - b.direction) % (2 * Math.PI.toFloat())
+                    if (angleDiff > Math.PI.toFloat()) angleDiff -= 2 * Math.PI.toFloat()
+                    if (angleDiff < -Math.PI.toFloat()) angleDiff += 2 * Math.PI.toFloat()
+
+                    val gravityStrength = if (gMode == GSTATE_HOURSWIN || gMode == GSTATE_MINUTESWIN) 0.000f else 0.008f
+                    if (gravityStrength > 0f) b.direction += angleDiff * gravityStrength
+                    b.computeDir()
+                }
             }
 
-            val distance = ballSpeed / (1000 / deltaMillis)
+            val distance = (ballSpeed * b.speedMultiplier) / (1000f / deltaMillis)
             val dX = distance * b.cosDir
 
-            if (gMode != GSTATE_HOURSWIN) movePanel(rightPanel ?: return, if (dX > 0 && b.x > canvasWidth2) b.y.toInt() else canvasHeight2, deltaMillis)
-            if (gMode != GSTATE_MINUTESWIN) movePanel(leftPanel ?: return, if (dX < 0 && b.x < canvasWidth2) b.y.toInt() else canvasHeight2, deltaMillis)
+            if (gMode != GSTATE_HOURSWIN) movePanel(rp, if (dX > 0 && b.x > canvasWidth2) b.y.toInt() else canvasHeight2, deltaMillis)
+            if (gMode != GSTATE_MINUTESWIN) movePanel(lp, if (dX < 0 && b.x < canvasWidth2) b.y.toInt() else canvasHeight2, deltaMillis)
 
             b.y += distance * b.sinDir
 
@@ -356,19 +480,19 @@ class PongTimeView @JvmOverloads constructor(
             }
 
             b.x += dX
-            val rp = rightPanel ?: return
-            val lp = leftPanel ?: return
 
             if (dX > 0 && b.x > rp.x && b.y > rp.y - panelLength && b.y < rp.y + panelLength) {
                 b.x = rp.x + (rp.x - b.x)
                 b.direction = (-b.direction + Math.PI + Math.random() * 0.6 - 0.3).toFloat()
                 b.direction = b.direction.coerceIn(MIN_RANGLE, MAX_RANGLE)
                 b.computeDir()
+                b.lastHitBy = 2
                 onPaddleHit(b.x, b.y)
             } else if (dX < 0 && b.x < lp.x && b.y > lp.y - panelLength && b.y < lp.y + panelLength) {
                 b.x = lp.x + (lp.x - b.x)
-                b.direction = -(b.direction - Math.PI.toFloat() + Math.random() * 0.6 - 0.3).toFloat()
+                b.direction = (-b.direction + Math.PI + Math.random() * 0.6 - 0.3).toFloat()
                 b.computeDir()
+                b.lastHitBy = 1
                 onPaddleHit(b.x, b.y)
             }
 
@@ -474,26 +598,44 @@ class PongTimeView @JvmOverloads constructor(
             try {
                 if (isNoGravity) {
                     canvas.drawColor(Color.BLACK)
-                    val starPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = cWhite }
                     stars.forEach { s ->
                         starPaint.alpha = s.alpha
                         canvas.drawCircle(s.x, s.y, s.size, starPaint)
+                    }
+
+                    planets.forEach { p ->
+                        planetPaint.color = p.color
+                        canvas.drawCircle(p.x, p.y, p.size, planetPaint)
+
+                        planetPaint.color = Color.argb(100, 0, 0, 0)
+                        planetRingRect.set(p.x - p.size, p.y - p.size, p.x + p.size, p.y + p.size)
+                        canvas.drawArc(planetRingRect, 90f, 180f, false, planetPaint)
+
+                        if (p.hasRing) {
+                            ringPaint.color = Color.argb(150, 200, 200, 200)
+                            planetRingRect.set(p.x - p.size * 1.8f, p.y - p.size * 0.4f, p.x + p.size * 1.8f, p.y + p.size * 0.4f)
+                            canvas.drawOval(planetRingRect, ringPaint)
+                        }
                     }
 
                     val cx = canvasWidth2.toFloat()
                     val cy = canvasHeight2.toFloat()
                     val bhRadius = 45f
 
-                    val glowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = 6f }
-                    glowPaint.color = colorCompat(R.color.acid_purple)
-                    canvas.drawCircle(cx, cy, bhRadius + 20f, glowPaint)
-                    glowPaint.color = colorCompat(R.color.black_hole_cyan)
-                    canvas.drawCircle(cx, cy, bhRadius + 10f, glowPaint)
-                    glowPaint.color = colorCompat(R.color.newyear_gold)
-                    canvas.drawCircle(cx, cy, bhRadius, glowPaint)
+                    canvas.drawCircle(cx, cy, bhRadius * 2.8f, haloPaint)
 
-                    val corePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.BLACK }
-                    canvas.drawCircle(cx, cy, bhRadius - 2f, corePaint)
+                    diskPaint.strokeWidth = 14f
+                    diskPaint.color = cNewYearGold
+                    diskPaint.alpha = 180
+                    canvas.drawOval(diskRect, diskPaint)
+
+                    diskPaint.strokeWidth = 4f
+                    diskPaint.color = Color.WHITE
+                    canvas.drawOval(diskRect, diskPaint)
+
+                    canvas.drawCircle(cx, cy, bhRadius, corePaint)
+                    canvas.drawCircle(cx, cy, bhRadius, photonRingPaint)
+
                 } else {
                     canvas.drawColor(bgColor)
                 }
@@ -543,9 +685,9 @@ class PongTimeView @JvmOverloads constructor(
                     canvas.drawLine(lp.x.toFloat(), lp.y - panelLength, lp.x.toFloat(), lp.y + panelLength, panelPaint)
                     canvas.drawLine(rp.x.toFloat(), rp.y - panelLength, rp.x.toFloat(), rp.y + panelLength, panelPaint)
                 } else if (isBreakout) {
-                    panelPaint.color = colorCompat(R.color.brick_blue)
+                    panelPaint.color = cBrickBlue
                     canvas.drawRoundRect(RectF(lp.x - 12f, lp.y - panelLength * 1.5f, lp.x + 12f, lp.y + panelLength * 1.5f), 12f, 12f, panelPaint)
-                    panelPaint.color = colorCompat(R.color.brick_red)
+                    panelPaint.color = cBrickRed
                     canvas.drawRoundRect(RectF(rp.x - 12f, rp.y - panelLength * 1.5f, rp.x + 12f, rp.y + panelLength * 1.5f), 12f, 12f, panelPaint)
                     panelPaint.color = if (isFuturistic) cModernCyan else mainColor
                 } else if (isFuturistic) {
@@ -576,20 +718,23 @@ class PongTimeView @JvmOverloads constructor(
                     panelPaint.alpha = 255
                 }
 
+                val prevAlpha = panelPaint.alpha
+                if (isNoGravity) panelPaint.alpha = b.alpha
+
                 when {
                     holiday.toString().contains("Halloween") -> {
                         emojiPaint.textSize = panelLength * 1.5f
-                        emojiPaint.alpha = 255
+                        emojiPaint.alpha = if (isNoGravity) b.alpha else 255
                         canvas.drawText("🎃", b.x, b.y + (emojiPaint.textSize / 3), emojiPaint)
                     }
                     holiday.toString().contains("NewYear") -> {
-                        panelPaint.color = colorCompat(R.color.newyear_gold)
+                        panelPaint.color = cNewYearGold
                         canvas.drawCircle(b.x, b.y, 18f, panelPaint)
                         panelPaint.color = mainColor
                     }
                     holiday.toString().contains("WorldCup2026") -> {
                         emojiPaint.textSize = panelLength * 1.5f
-                        emojiPaint.alpha = 255
+                        emojiPaint.alpha = if (isNoGravity) b.alpha else 255
                         canvas.drawText("⚽", b.x, b.y + (emojiPaint.textSize / 3), emojiPaint)
                     }
                     isBreakout -> {
@@ -606,13 +751,16 @@ class PongTimeView @JvmOverloads constructor(
                     else -> canvas.drawCircle(b.x, b.y, 12f, panelPaint)
                 }
 
+                panelPaint.alpha = prevAlpha
+
                 drawNum(canvas, number1X, currentHours / 10)
                 drawNum(canvas, number2X, currentHours % 10)
                 drawNum(canvas, number3X, currentMinutes / 10)
                 drawNum(canvas, number4X, currentMinutes % 10)
 
                 if (isGlitch) {
-                    for (y in 0..canvasHeight step 4) {
+                    // Ottimizzazione estrema: ridotta densità linee per non uccidere la GPU/GC in uscita
+                    for (y in 0..canvasHeight step 12) {
                         canvas.drawLine(0f, y.toFloat(), canvasWidth.toFloat(), y.toFloat(), scanlinePaint)
                     }
 
@@ -642,28 +790,32 @@ class PongTimeView @JvmOverloads constructor(
         override fun run() {
             var lastFrameTime = System.currentTimeMillis()
             while (running && !isInterrupted) {
-                val now = System.currentTimeMillis()
-                val delta = now - lastFrameTime
-                if (delta >= 16) {
-                    lastFrameTime = now
-                    applySurfaceSize()
-                    if (canvasWidth > 0 && canvasHeight > 0) {
-                        var c: Canvas? = null
-                        try {
-                            c = surfaceHolder.lockCanvas()
-                            if (c != null) {
-                                updatePhysics(delta)
-                                doDraw(c)
-                            }
-                        } catch (t: Throwable) {
-                        } finally {
-                            if (c != null) {
-                                try { surfaceHolder.unlockCanvasAndPost(c) } catch (t: Throwable) {}
+                try {
+                    val now = System.currentTimeMillis()
+                    val delta = now - lastFrameTime
+                    if (delta >= 16) {
+                        lastFrameTime = now
+                        applySurfaceSize()
+                        if (canvasWidth > 0 && canvasHeight > 0 && running) {
+                            var c: Canvas? = null
+                            try {
+                                c = surfaceHolder.lockCanvas()
+                                if (c != null && running) {
+                                    updatePhysics(delta)
+                                    doDraw(c)
+                                }
+                            } catch (t: Throwable) {
+                            } finally {
+                                if (c != null) {
+                                    try { surfaceHolder.unlockCanvasAndPost(c) } catch (t: Throwable) {}
+                                }
                             }
                         }
+                    } else {
+                        sleep(2)
                     }
-                } else {
-                    try { sleep(2) } catch (e: InterruptedException) { break }
+                } catch (e: InterruptedException) {
+                    break // Esce immediatamente dal loop se viene interrotto (es. tasto indietro)
                 }
             }
         }
@@ -717,8 +869,19 @@ class PongTimeView @JvmOverloads constructor(
     }
 
     override fun surfaceDestroyed(h: SurfaceHolder) {
+        var retry = true
         thread?.setRunning(false)
         thread?.interrupt()
+
+        // Sblocca immediatamente il thread e attende la chiusura senza bloccare la UI
+        while (retry) {
+            try {
+                thread?.join(100) // Timeout di sicurezza per evitare blocchi
+                retry = false
+            } catch (e: InterruptedException) {
+                retry = false
+            }
+        }
         thread = null
     }
 
