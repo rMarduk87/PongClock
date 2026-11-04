@@ -113,7 +113,9 @@ class PongTimeView @JvmOverloads constructor(
         private val trailY = FloatArray(8)
         private var trailSize = 0
 
-        // --- OGGETTI GRAFICI OTTIMIZZATI --- (Allocati una sola volta per evitare il crash di memoria)
+        private var crtBarY = -100f // Barra scorrevole CRT per Glitch mode
+
+        // --- OGGETTI GRAFICI OTTIMIZZATI ---
         private val dashedLinePaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val numberPaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -125,9 +127,28 @@ class PongTimeView @JvmOverloads constructor(
 
         private val scanlinePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.argb(60, 0, 0, 0)
-            strokeWidth = 4f // Più spessa, così ne disegniamo meno e ottimizziamo
+            strokeWidth = 4f
         }
         private val ghostPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { alpha = 100 }
+
+        // Elementi Glitch Pre-Allocati
+        private val glitchCyanPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.CYAN
+            style = Paint.Style.STROKE
+            strokeWidth = LINE_WIDTH.toFloat()
+            strokeCap = Paint.Cap.SQUARE
+            alpha = 150
+        }
+        private val glitchMagentaPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.MAGENTA
+            style = Paint.Style.STROKE
+            strokeWidth = LINE_WIDTH.toFloat()
+            strokeCap = Paint.Cap.SQUARE
+            alpha = 150
+        }
+        private val glitchBlockPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.FILL
+        }
 
         // Elementi Buco Nero Pre-Allocati
         private val starPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE }
@@ -213,7 +234,6 @@ class PongTimeView @JvmOverloads constructor(
 
             isClassic = (SharedPreferencesManager.classic == 1 || (!isMatrix && !isBreakout && !isSeason && !isFuturistic && !isGlitch && !isNoGravity))
 
-            // Cache dei colori per non rallentare mai il loop di rendering
             cWhite = colorCompat(R.color.white)
             cMatrix = colorCompat(R.color.matrix)
             cNeonPink = colorCompat(R.color.neon_pink)
@@ -307,7 +327,6 @@ class PongTimeView @JvmOverloads constructor(
             rightPanel = Panel((w - panelXPos).toInt(), canvasHeight2)
             ball = Ball(canvasWidth2.toFloat(), canvasHeight2.toFloat())
 
-            // Aggiornamento oggetti spaziali leggeri
             stars.clear()
             for (i in 0 until 80) {
                 stars.add(Star(Random.nextFloat() * w, Random.nextFloat() * h,
@@ -327,7 +346,6 @@ class PongTimeView @JvmOverloads constructor(
                 ))
             }
 
-            // Preparazione statica degli asset visivi del buco nero (fondamentale per evitare crash di memoria)
             val cx = canvasWidth2.toFloat()
             val cy = canvasHeight2.toFloat()
             val bhRadius = 45f
@@ -375,6 +393,11 @@ class PongTimeView @JvmOverloads constructor(
         private fun updatePhysics(deltaMillis: Long) {
             updateTime()
             updateParticles()
+
+            if (isGlitch) {
+                crtBarY += (deltaMillis * 0.2f)
+                if (crtBarY > canvasHeight + 100f) crtBarY = -150f
+            }
 
             if (gMode == GSTATE_STOPPED || gMode == GSTATE_NONE) return
             val b = ball ?: return
@@ -520,7 +543,11 @@ class PongTimeView @JvmOverloads constructor(
 
         private fun onPaddleHit(x: Float, y: Float) {
             if (isGlitch) {
-                glitchTimer = 8
+                glitchTimer = Random.nextInt(8, 16)
+                for (i in 0..8) {
+                    // Type 5 per le nuove particelle glitch (linee distorte)
+                    particles.add(FxParticle(x, y, (Random.nextFloat() - 0.5f) * 16f, (Random.nextFloat() - 0.5f) * 6f, 1f, 1f, 5, "", if(Random.nextBoolean()) Color.CYAN else Color.MAGENTA))
+                }
             }
             if (holiday.toString().contains("NewYear")) {
                 val sparkColor = newYearColors[Random.nextInt(newYearColors.size)]
@@ -549,6 +576,7 @@ class PongTimeView @JvmOverloads constructor(
                 val p = iter.next()
                 p.x += p.dx; p.y += p.dy
                 if (p.type == 3) { p.dy += 0.2f; p.life -= 0.03f }
+                if (p.type == 5) { p.life -= 0.05f } // decadimento rapido particelle glitch
                 if (p.y < -100 || p.y > canvasHeight + 100 || p.life <= 0) iter.remove()
             }
         }
@@ -586,10 +614,12 @@ class PongTimeView @JvmOverloads constructor(
             val b = ball ?: return
 
             var canvasSaved = false
+            val isGlitchSpike = isGlitch && (glitchTimer > 0 || Math.random() < 0.05)
+
             if (isGlitch) {
                 if (glitchTimer > 0) glitchTimer--
-                val shakeX = if (glitchTimer > 0 || Math.random() < 0.15) (Math.random() * 20 - 10).toFloat() else 0f
-                val shakeY = if (glitchTimer > 0 || Math.random() < 0.15) (Math.random() * 20 - 10).toFloat() else 0f
+                val shakeX = if (isGlitchSpike) (Math.random() * 16 - 8).toFloat() else 0f
+                val shakeY = if (isGlitchSpike) (Math.random() * 10 - 5).toFloat() else 0f
                 canvas.save()
                 canvas.translate(shakeX, shakeY)
                 canvasSaved = true
@@ -646,12 +676,38 @@ class PongTimeView @JvmOverloads constructor(
                     for (y in 0..canvasHeight step step) canvas.drawLine(0f, y.toFloat(), canvasWidth.toFloat(), y.toFloat(), gridPaint)
                 }
 
+                if (isGlitch) {
+                    // CRT Scan bar scorrevole
+                    glitchBlockPaint.color = Color.argb(20, 255, 255, 255)
+                    canvas.drawRect(0f, crtBarY, canvasWidth.toFloat(), crtBarY + 40f, glitchBlockPaint)
+
+                    // Digital Tearing visivo durante il glitch
+                    if (isGlitchSpike) {
+                        val blockCount = Random.nextInt(3, 8)
+                        for (i in 0 until blockCount) {
+                            glitchBlockPaint.color = if (Random.nextBoolean()) Color.CYAN else Color.MAGENTA
+                            glitchBlockPaint.alpha = Random.nextInt(40, 100)
+                            val rx = Random.nextFloat() * canvasWidth
+                            val ry = Random.nextFloat() * canvasHeight
+                            val rw = Random.nextFloat() * 150f + 50f
+                            val rh = Random.nextFloat() * 15f + 5f
+                            canvas.drawRect(rx, ry, rx + rw, ry + rh, glitchBlockPaint)
+                        }
+                    }
+                }
+
                 particles.forEach { p ->
                     when (p.type) {
                         1 -> { particlePaint.color = cWhite; canvas.drawCircle(p.x, p.y, 4f, particlePaint) }
                         2 -> { particlePaint.color = cMatrix; particlePaint.textSize = 30f; canvas.drawText(p.extra, p.x, p.y, particlePaint) }
                         3 -> { particlePaint.color = p.color; particlePaint.alpha = (p.life * 255).toInt().coerceIn(0, 255); canvas.drawCircle(p.x, p.y, 5f, particlePaint) }
                         4 -> { emojiPaint.textSize = 60f; emojiPaint.alpha = 150; canvas.drawText(p.extra, p.x, p.y, emojiPaint) }
+                        5 -> { // Particella glitch frammentata
+                            particlePaint.color = p.color
+                            particlePaint.alpha = (p.life * 255).toInt().coerceIn(0, 255)
+                            val w = Random.nextFloat() * 15f + 5f
+                            canvas.drawRect(p.x - w, p.y - 2f, p.x + w, p.y + 2f, particlePaint)
+                        }
                     }
                 }
                 particlePaint.alpha = 255
@@ -753,13 +809,12 @@ class PongTimeView @JvmOverloads constructor(
 
                 panelPaint.alpha = prevAlpha
 
-                drawNum(canvas, number1X, currentHours / 10)
-                drawNum(canvas, number2X, currentHours % 10)
-                drawNum(canvas, number3X, currentMinutes / 10)
-                drawNum(canvas, number4X, currentMinutes % 10)
+                drawNum(canvas, number1X, currentHours / 10, isGlitchSpike)
+                drawNum(canvas, number2X, currentHours % 10, isGlitchSpike)
+                drawNum(canvas, number3X, currentMinutes / 10, isGlitchSpike)
+                drawNum(canvas, number4X, currentMinutes % 10, isGlitchSpike)
 
                 if (isGlitch) {
-                    // Ottimizzazione estrema: ridotta densità linee per non uccidere la GPU/GC in uscita
                     for (y in 0..canvasHeight step 12) {
                         canvas.drawLine(0f, y.toFloat(), canvasWidth.toFloat(), y.toFloat(), scanlinePaint)
                     }
@@ -778,11 +833,24 @@ class PongTimeView @JvmOverloads constructor(
             }
         }
 
-        private fun drawNum(canvas: Canvas, x: Int, n: Int) {
+        // Modificata per supportare l'aberrazione cromatica
+        private fun drawNum(canvas: Canvas, x: Int, n: Int, isGlitchSpike: Boolean = false) {
             canvas.withSave {
                 val numHeight = LH * numberScale
                 translate(x.toFloat(), canvasHeight2 - numHeight / 2)
                 scale(numberScale, numberScale)
+
+                if (isGlitchSpike && Math.random() > 0.4) {
+                    val shiftX = (Math.random() * 2 - 1).toFloat()
+                    canvas.withSave {
+                        translate(shiftX * 2, 0f)
+                        drawLines(numbers[n], glitchCyanPaint)
+                    }
+                    canvas.withSave {
+                        translate(-shiftX * 2, 0f)
+                        drawLines(numbers[n], glitchMagentaPaint)
+                    }
+                }
                 drawLines(numbers[n], numberPaint)
             }
         }
@@ -815,7 +883,7 @@ class PongTimeView @JvmOverloads constructor(
                         sleep(2)
                     }
                 } catch (e: InterruptedException) {
-                    break // Esce immediatamente dal loop se viene interrotto (es. tasto indietro)
+                    break
                 }
             }
         }
@@ -873,10 +941,9 @@ class PongTimeView @JvmOverloads constructor(
         thread?.setRunning(false)
         thread?.interrupt()
 
-        // Sblocca immediatamente il thread e attende la chiusura senza bloccare la UI
         while (retry) {
             try {
-                thread?.join(100) // Timeout di sicurezza per evitare blocchi
+                thread?.join(100)
                 retry = false
             } catch (e: InterruptedException) {
                 retry = false
