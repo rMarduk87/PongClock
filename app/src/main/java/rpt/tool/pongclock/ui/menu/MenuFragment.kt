@@ -39,11 +39,14 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
             val holiday = AppUtils.getHoliday(Calendar.getInstance())
             
             val isBreakout = SharedPreferencesManager.breakOut == 1
+            val isExtra = SharedPreferencesManager.glitch == 1 || SharedPreferencesManager.noGravity == 1
 
             val action = if (holiday != AppUtils.Companion.Holiday.None) {
                 MenuFragmentDirections.actionMenuFragmentToClockFragment()
             } else if (isBreakout) {
                 MenuFragmentDirections.actionMenuFragmentToBreakOutClockFragment()
+            } else if (isExtra) {
+                MenuFragmentDirections.actionMenuFragmentToExtraModeClockFragment()
             } else {
                 MenuFragmentDirections.actionMenuFragmentToClockFragment()
             }

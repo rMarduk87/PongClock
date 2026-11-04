@@ -1,11 +1,9 @@
 package rpt.tool.pongclock.ui.settings
 
-import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.snackbar.Snackbar
@@ -15,13 +13,11 @@ import rpt.tool.pongclock.R
 import rpt.tool.pongclock.databinding.FragmentSettingsBinding
 import rpt.tool.pongclock.utils.AppUtils
 import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
-import java.util.Calendar
 import kotlin.math.max
 
 class SettingsFragment :
     BaseFragment<FragmentSettingsBinding>(FragmentSettingsBinding::inflate,true) {
 
-    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -39,7 +35,9 @@ class SettingsFragment :
         }
 
         binding.toolbar.setNavigationOnClickListener {
-            safeNavController(R.id.main_activity_nav_host_fragment)?.popBackStack() }
+            safeNavController(R.id.main_activity_nav_host_fragment)?.
+            navigate(SettingsFragmentDirections.actionSettingsFragmentToMenuFragment())
+        }
 
         updateSwitches()
         applyTheme()
@@ -108,6 +106,12 @@ class SettingsFragment :
             applyTheme()
             showIconFeedback()
         }
+
+        binding.buttonExtraMode.setOnClickListener { _ ->
+            safeNavController(R.id.main_activity_nav_host_fragment)?.navigate(
+                SettingsFragmentDirections
+                    .actionSettingsFragmentToExtraSettingsFragment())
+        }
     }
 
     private fun disableAll() {
@@ -116,6 +120,8 @@ class SettingsFragment :
         SharedPreferencesManager.mode = 0
         SharedPreferencesManager.season = 0
         SharedPreferencesManager.breakOut = 0
+        SharedPreferencesManager.glitch = 0
+        SharedPreferencesManager.noGravity = 0
     }
 
     private fun updateSwitches() {
@@ -144,7 +150,8 @@ class SettingsFragment :
             it.modeCard.setCardBackgroundColor(bgColor)
             it.modeCard.strokeColor = mainColor
 
-            val textViews = listOf(it.lblClassic, it.lblFuturistic, it.lblActive, it.lblFix, it.lblBreakout)
+            val textViews = listOf(it.lblClassic, it.lblFuturistic, it.lblActive, it.lblFix,
+                it.lblBreakout, it.lblExtra)
             textViews.forEach { tv -> tv.setTextColor(mainColor) }
 
             val switches = listOf(
@@ -156,6 +163,8 @@ class SettingsFragment :
                 sw.thumbTintList = ColorStateList.valueOf(accentColor)
                 sw.trackTintList = ColorStateList.valueOf(accentColor).withAlpha(100)
             }
+
+            binding.buttonExtraMode.iconTint = ColorStateList.valueOf(accentColor)
         }
     }
 

@@ -26,6 +26,12 @@ class ClockFragment : BaseFragment<FragmentClockBinding>(FragmentClockBinding::i
             return
         }
 
+        if(SharedPreferencesManager.glitch == 1 || SharedPreferencesManager.noGravity == 1){
+            safeNavController(R.id.main_activity_nav_host_fragment)
+                ?.safeNavigate(R.id.action_clockFragment_to_extraModeClockFragment)
+            return
+        }
+
         if (holiday == AppUtils.Companion.Holiday.WorldCup2026) {
             binding.leftGoal.visibility = View.VISIBLE
             binding.rightGoal.visibility = View.VISIBLE
