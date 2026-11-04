@@ -26,4 +26,8 @@
     <string name="nav_failed">Error de navegación</string>
     <string name="img" />
     <string name="icon_update_on_close">El icono se actualizará al cerrar la aplicación</string>
+    <string name="extra_mode">Modo extra</string>
+    <string name="e_settings_t">Ajustes adicionales</string>
+    <string name="glitch_mode">Modo glitch</string>
+    <string name="no_gravity_mode">Modo Sin Gravedad/Espacial</string>
 </resources>
