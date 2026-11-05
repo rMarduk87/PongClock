@@ -3,7 +3,7 @@ activityKtx = "1.13.0"
 agp = "9.4.1"
 balloon = "2.0.1"
 featureDelivery = "2.1.0"
-gradle = "9.5.0"
+gradle = "9.5.1"
 jsr305 = "3.0.2"
 kotlin = "2.4.20"
 coreKtx = "1.19.1"
@@ -31,6 +31,7 @@ activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activ
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-navigation-dynamic-features-fragment = { module = "androidx.navigation:navigation-dynamic-features-fragment", version.ref = "navigationFragmentKtx" }
 androidx-navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
+androidx-navigation-safe-args-gradle-plugin = { module = "androidx.navigation:navigation-safe-args-gradle-plugin", version.ref = "navigationFragmentKtx" }
 androidx-preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "preferenceKtx" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 app-update = { module = "com.google.android.play:app-update", version.ref = "featureDelivery" }

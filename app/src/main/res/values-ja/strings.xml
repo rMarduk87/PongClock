@@ -30,4 +30,6 @@
     <string name="e_settings_t">エクストラ設定</string>
     <string name="glitch_mode">グリッチモード</string>
     <string name="no_gravity_mode">無重力／宇宙モード</string>
+    <string name="blue_print_mode">Blueprint Mode</string>
+    <string name="pacman_mode">Pacman Mode</string>
 </resources>

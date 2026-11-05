@@ -97,6 +97,7 @@ class PongTimeView @JvmOverloads constructor(
         private var isFuturistic = false
         private var isGlitch = false
         private var isNoGravity = false
+        private var isBlueprint = false
         private var glitchTimer = 0
 
         private var holiday: Any? = null
@@ -113,7 +114,7 @@ class PongTimeView @JvmOverloads constructor(
         private val trailY = FloatArray(8)
         private var trailSize = 0
 
-        private var crtBarY = -100f // Barra scorrevole CRT per Glitch mode
+        private var crtBarY = -100f
 
         // --- OGGETTI GRAFICI OTTIMIZZATI ---
         private val dashedLinePaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -130,6 +131,33 @@ class PongTimeView @JvmOverloads constructor(
             strokeWidth = 4f
         }
         private val ghostPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { alpha = 100 }
+
+        // Elementi Blueprint
+        private val blueprintGridPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.argb(40, 255, 255, 255)
+            strokeWidth = 1f
+        }
+        private val blueprintGridMajorPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.argb(80, 255, 255, 255)
+            strokeWidth = 2f
+        }
+        private val blueprintVectorPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.argb(200, 0, 255, 255)
+            style = Paint.Style.STROKE
+            strokeWidth = 2f
+        }
+        private val blueprintPredictionPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.argb(150, 255, 255, 255)
+            style = Paint.Style.STROKE
+            strokeWidth = 2f
+            pathEffect = DashPathEffect(floatArrayOf(15f, 15f), 0f)
+        }
+        private val blueprintTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.argb(200, 255, 255, 255)
+            typeface = Typeface.MONOSPACE
+            textSize = 24f
+        }
+        private val blueprintPath = Path()
 
         // Elementi Glitch Pre-Allocati
         private val glitchCyanPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -231,8 +259,9 @@ class PongTimeView @JvmOverloads constructor(
             isFuturistic = SharedPreferencesManager.futuristic == 1
             isGlitch = SharedPreferencesManager.glitch == 1
             isNoGravity = SharedPreferencesManager.noGravity == 1
+            isBlueprint = SharedPreferencesManager.bluePrint == 1
 
-            isClassic = (SharedPreferencesManager.classic == 1 || (!isMatrix && !isBreakout && !isSeason && !isFuturistic && !isGlitch && !isNoGravity))
+            isClassic = (SharedPreferencesManager.classic == 1 || (!isMatrix && !isBreakout && !isSeason && !isFuturistic && !isGlitch && !isNoGravity && !isBlueprint))
 
             cWhite = colorCompat(R.color.white)
             cMatrix = colorCompat(R.color.matrix)
@@ -277,6 +306,7 @@ class PongTimeView @JvmOverloads constructor(
             gridPaint.color = mainColor
             gridPaint.alpha = if (isClassic) 0 else 20
             numberPaint.color = mainColor
+            numberPaint.strokeWidth = LINE_WIDTH.toFloat()
 
             if (isFuturistic) {
                 linePaint.color = cModernCyan
@@ -294,6 +324,21 @@ class PongTimeView @JvmOverloads constructor(
                 dashedLinePaint.color = colorCompat(R.color.cyberpunk_green)
                 numberPaint.color = colorCompat(R.color.cyberpunk_green)
                 pinkLinePaint.color = colorCompat(R.color.shocking_pink)
+            }
+
+            if (isBlueprint) {
+                bgColor = Color.parseColor("#0A2342") // Blueprint Blue
+                mainColor = Color.WHITE
+                linePaint.color = mainColor
+                linePaint.strokeWidth = 2f
+                panelPaint.color = mainColor
+                panelPaint.strokeWidth = 2f
+                panelPaint.style = Paint.Style.STROKE
+                dashedLinePaint.color = mainColor
+                dashedLinePaint.strokeWidth = 2f
+                dashedLinePaint.alpha = 200
+                numberPaint.color = mainColor
+                numberPaint.strokeWidth = 2f
             }
         }
 
@@ -318,6 +363,9 @@ class PongTimeView @JvmOverloads constructor(
             playFieldX2 = w - playFieldX1
             panelXPos = (w * 0.05f).coerceAtMost(50f)
             panelLength = (h * 0.1f).coerceAtMost(100f)
+
+            // Adatta la dimensione del testo HUD in base all'altezza dello schermo
+            blueprintTextPaint.textSize = (h * 0.02f).coerceIn(16f, 32f)
 
             goalHeightPx = context.resources.displayMetrics.density * 180f
             ballSpeed = w * 0.4f
@@ -415,6 +463,7 @@ class PongTimeView @JvmOverloads constructor(
             }
 
             if (isNoGravity) {
+                // (Codice NoGravity non modificato...)
                 stars.forEach { s ->
                     s.x -= s.speed
                     if (s.x < 0) {
@@ -545,7 +594,6 @@ class PongTimeView @JvmOverloads constructor(
             if (isGlitch) {
                 glitchTimer = Random.nextInt(8, 16)
                 for (i in 0..8) {
-                    // Type 5 per le nuove particelle glitch (linee distorte)
                     particles.add(FxParticle(x, y, (Random.nextFloat() - 0.5f) * 16f, (Random.nextFloat() - 0.5f) * 6f, 1f, 1f, 5, "", if(Random.nextBoolean()) Color.CYAN else Color.MAGENTA))
                 }
             }
@@ -576,7 +624,7 @@ class PongTimeView @JvmOverloads constructor(
                 val p = iter.next()
                 p.x += p.dx; p.y += p.dy
                 if (p.type == 3) { p.dy += 0.2f; p.life -= 0.03f }
-                if (p.type == 5) { p.life -= 0.05f } // decadimento rapido particelle glitch
+                if (p.type == 5) { p.life -= 0.05f }
                 if (p.y < -100 || p.y > canvasHeight + 100 || p.life <= 0) iter.remove()
             }
         }
@@ -627,6 +675,7 @@ class PongTimeView @JvmOverloads constructor(
 
             try {
                 if (isNoGravity) {
+                    // (Codice draw NoGravity non modificato...)
                     canvas.drawColor(Color.BLACK)
                     stars.forEach { s ->
                         starPaint.alpha = s.alpha
@@ -636,7 +685,6 @@ class PongTimeView @JvmOverloads constructor(
                     planets.forEach { p ->
                         planetPaint.color = p.color
                         canvas.drawCircle(p.x, p.y, p.size, planetPaint)
-
                         planetPaint.color = Color.argb(100, 0, 0, 0)
                         planetRingRect.set(p.x - p.size, p.y - p.size, p.x + p.size, p.y + p.size)
                         canvas.drawArc(planetRingRect, 90f, 180f, false, planetPaint)
@@ -647,22 +695,18 @@ class PongTimeView @JvmOverloads constructor(
                             canvas.drawOval(planetRingRect, ringPaint)
                         }
                     }
-
                     val cx = canvasWidth2.toFloat()
                     val cy = canvasHeight2.toFloat()
                     val bhRadius = 45f
 
                     canvas.drawCircle(cx, cy, bhRadius * 2.8f, haloPaint)
-
                     diskPaint.strokeWidth = 14f
                     diskPaint.color = cNewYearGold
                     diskPaint.alpha = 180
                     canvas.drawOval(diskRect, diskPaint)
-
                     diskPaint.strokeWidth = 4f
                     diskPaint.color = Color.WHITE
                     canvas.drawOval(diskRect, diskPaint)
-
                     canvas.drawCircle(cx, cy, bhRadius, corePaint)
                     canvas.drawCircle(cx, cy, bhRadius, photonRingPaint)
 
@@ -671,17 +715,20 @@ class PongTimeView @JvmOverloads constructor(
                 }
 
                 if (!isClassic && !isBreakout) {
-                    val step = 100
-                    for (x in 0..canvasWidth step step) canvas.drawLine(x.toFloat(), 0f, x.toFloat(), canvasHeight.toFloat(), gridPaint)
-                    for (y in 0..canvasHeight step step) canvas.drawLine(0f, y.toFloat(), canvasWidth.toFloat(), y.toFloat(), gridPaint)
+                    val step = if (isBlueprint) 50 else 100
+                    for (x in 0..canvasWidth step step) {
+                        val activeGridPaint = if (isBlueprint && (x % (step * 4) == 0)) blueprintGridMajorPaint else if (isBlueprint) blueprintGridPaint else gridPaint
+                        canvas.drawLine(x.toFloat(), 0f, x.toFloat(), canvasHeight.toFloat(), activeGridPaint)
+                    }
+                    for (y in 0..canvasHeight step step) {
+                        val activeGridPaint = if (isBlueprint && (y % (step * 4) == 0)) blueprintGridMajorPaint else if (isBlueprint) blueprintGridPaint else gridPaint
+                        canvas.drawLine(0f, y.toFloat(), canvasWidth.toFloat(), y.toFloat(), activeGridPaint)
+                    }
                 }
 
                 if (isGlitch) {
-                    // CRT Scan bar scorrevole
                     glitchBlockPaint.color = Color.argb(20, 255, 255, 255)
                     canvas.drawRect(0f, crtBarY, canvasWidth.toFloat(), crtBarY + 40f, glitchBlockPaint)
-
-                    // Digital Tearing visivo durante il glitch
                     if (isGlitchSpike) {
                         val blockCount = Random.nextInt(3, 8)
                         for (i in 0 until blockCount) {
@@ -702,7 +749,7 @@ class PongTimeView @JvmOverloads constructor(
                         2 -> { particlePaint.color = cMatrix; particlePaint.textSize = 30f; canvas.drawText(p.extra, p.x, p.y, particlePaint) }
                         3 -> { particlePaint.color = p.color; particlePaint.alpha = (p.life * 255).toInt().coerceIn(0, 255); canvas.drawCircle(p.x, p.y, 5f, particlePaint) }
                         4 -> { emojiPaint.textSize = 60f; emojiPaint.alpha = 150; canvas.drawText(p.extra, p.x, p.y, emojiPaint) }
-                        5 -> { // Particella glitch frammentata
+                        5 -> {
                             particlePaint.color = p.color
                             particlePaint.alpha = (p.life * 255).toInt().coerceIn(0, 255)
                             val w = Random.nextFloat() * 15f + 5f
@@ -728,16 +775,104 @@ class PongTimeView @JvmOverloads constructor(
                         canvas.drawLine(0f, playFieldY1.toFloat(), canvasWidth.toFloat(), playFieldY1.toFloat(), linePaint)
                         canvas.drawLine(0f, playFieldY2.toFloat(), canvasWidth.toFloat(), playFieldY2.toFloat(), linePaint)
                     }
-
-                    if (holiday.toString().contains("WorldCup2026")) {
-                        val pitchPaint = Paint(linePaint).apply { style = Paint.Style.STROKE; strokeWidth = 4f; alpha = 100 }
-                        canvas.drawCircle(canvasWidth2.toFloat(), canvasHeight2.toFloat(), canvasHeight * 0.15f, pitchPaint)
-                    }
                 }
 
                 canvas.drawLine(canvasWidth2.toFloat(), 0f, canvasWidth2.toFloat(), canvasHeight.toFloat(), dashedLinePaint)
 
-                if (isClassic) {
+                // Renderizzazione tracciati per modalità dinamiche
+                if (!isClassic && !isBreakout) {
+                    if (isBlueprint && trailSize > 1) {
+                        blueprintPath.reset()
+                        blueprintPath.moveTo(b.x, b.y)
+                        for (index in 0 until trailSize) {
+                            blueprintPath.lineTo(trailX[index], trailY[index])
+                        }
+                        canvas.drawPath(blueprintPath, blueprintVectorPaint)
+                    } else if (isFuturistic) {
+                        for (index in 0 until trailSize) {
+                            panelPaint.color = if (index < 3) cNeonPink else cModernCyan
+                            panelPaint.alpha = 255 - (index * 30)
+                            canvas.drawRect(trailX[index] - 8, trailY[index] - 8, trailX[index] + 8, trailY[index] + 8, panelPaint)
+                        }
+                        panelPaint.color = cModernCyan
+                    } else if (!isBlueprint) {
+                        for (index in 0 until trailSize) {
+                            panelPaint.alpha = 255 - (index * 30)
+                            canvas.drawCircle(trailX[index], trailY[index], 10f - (index * 0.8f), panelPaint)
+                        }
+                    }
+                    panelPaint.alpha = 255
+                }
+
+                if (isBlueprint) {
+                    // Cartigli / Technical Overlay negli angoli
+                    val padding = 30f
+                    canvas.drawText("SYS.MODE = DEV // DIAGNOSTIC_OVERLAY", padding, padding + blueprintTextPaint.textSize, blueprintTextPaint)
+                    canvas.drawText("PROJECT: PONG-CLOCK // SCALE 1:1", padding, canvasHeight - padding, blueprintTextPaint)
+
+                    val rightAlignText = "TRJ_ITER = 3 // ENGINE: ACTIVE"
+                    val textWidth = blueprintTextPaint.measureText(rightAlignText)
+                    canvas.drawText(rightAlignText, canvasWidth - textWidth - padding, canvasHeight - padding, blueprintTextPaint)
+
+                    // Assi di traslazione racchette per effetto "tecnico"
+                    canvas.drawLine(lp.x.toFloat(), 0f, lp.x.toFloat(), canvasHeight.toFloat(), blueprintGridPaint)
+                    canvas.drawLine(rp.x.toFloat(), 0f, rp.x.toFloat(), canvasHeight.toFloat(), blueprintGridPaint)
+
+                    // Telemetria (HUD) ancorata alla racchetta sinistra (Player 1/AI)
+                    canvas.drawText(String.format("Y_DIST: %03d", abs(canvasHeight2 - lp.y)), lp.x + 15f, lp.y.toFloat(), blueprintTextPaint)
+
+                    // CPU Trajectory Raycasting (Predizione 3 Rimbalzi)
+                    var pX = b.x
+                    var pY = b.y
+                    var pDir = b.direction
+                    var bounces = 0
+                    blueprintPath.reset()
+                    blueprintPath.moveTo(pX, pY)
+
+                    while (bounces < 3) {
+                        val pCos = cos(pDir.toDouble()).toFloat()
+                        val pSin = sin(pDir.toDouble()).toFloat()
+
+                        var distToX = Float.MAX_VALUE
+                        var nextX = pX
+                        if (pCos > 0.0001f) {
+                            distToX = (playFieldX2 - pX) / pCos
+                            nextX = playFieldX2.toFloat()
+                        } else if (pCos < -0.0001f) {
+                            distToX = (playFieldX1 - pX) / pCos
+                            nextX = playFieldX1.toFloat()
+                        }
+
+                        var distToY = Float.MAX_VALUE
+                        var nextY = pY
+                        if (pSin > 0.0001f) {
+                            distToY = (playFieldY2 - pY) / pSin
+                            nextY = playFieldY2.toFloat()
+                        } else if (pSin < -0.0001f) {
+                            distToY = (playFieldY1 - pY) / pSin
+                            nextY = playFieldY1.toFloat()
+                        }
+
+                        if (distToX < distToY) {
+                            pY += distToX * pSin
+                            pX = nextX
+                            pDir = (Math.PI.toFloat() - pDir)
+                            bounces++
+                        } else {
+                            pX += distToY * pCos
+                            pY = nextY
+                            pDir = -pDir
+                            bounces++
+                        }
+                        blueprintPath.lineTo(pX, pY)
+
+                        // Disegna un marker (nodo vettoriale) sul punto di impatto stimato
+                        canvas.drawCircle(pX, pY, 4f, blueprintVectorPaint)
+                    }
+                    canvas.drawPath(blueprintPath, blueprintPredictionPaint)
+                }
+
+                if (isClassic || isBlueprint) {
                     canvas.drawLine(lp.x.toFloat(), lp.y - panelLength, lp.x.toFloat(), lp.y + panelLength, panelPaint)
                     canvas.drawLine(rp.x.toFloat(), rp.y - panelLength, rp.x.toFloat(), rp.y + panelLength, panelPaint)
                 } else if (isBreakout) {
@@ -755,23 +890,6 @@ class PongTimeView @JvmOverloads constructor(
                 } else {
                     canvas.drawRoundRect(RectF(lp.x - 8f, lp.y - panelLength * 1.2f, lp.x + 8f, lp.y + panelLength * 1.2f), 8f, 8f, panelPaint)
                     canvas.drawRoundRect(RectF(rp.x - 8f, rp.y - panelLength * 1.2f, rp.x + 8f, rp.y + panelLength * 1.2f), 8f, 8f, panelPaint)
-                }
-
-                if (!isClassic && !isBreakout) {
-                    if (isFuturistic) {
-                        for (index in 0 until trailSize) {
-                            panelPaint.color = if (index < 3) cNeonPink else cModernCyan
-                            panelPaint.alpha = 255 - (index * 30)
-                            canvas.drawRect(trailX[index] - 8, trailY[index] - 8, trailX[index] + 8, trailY[index] + 8, panelPaint)
-                        }
-                        panelPaint.color = cModernCyan
-                    } else {
-                        for (index in 0 until trailSize) {
-                            panelPaint.alpha = 255 - (index * 30)
-                            canvas.drawCircle(trailX[index], trailY[index], 10f - (index * 0.8f), panelPaint)
-                        }
-                    }
-                    panelPaint.alpha = 255
                 }
 
                 val prevAlpha = panelPaint.alpha
@@ -803,6 +921,20 @@ class PongTimeView @JvmOverloads constructor(
                         canvas.drawRect(b.x - 10, b.y - 10, b.x + 10, b.y + 10, panelPaint)
                         panelPaint.color = cModernCyan
                     }
+                    isBlueprint -> {
+                        // Disegna il mirino (Crosshair vettoriale) anzichè la pallina solida
+                        val crossSize = 20f
+                        canvas.drawLine(b.x - crossSize, b.y, b.x + crossSize, b.y, blueprintVectorPaint)
+                        canvas.drawLine(b.x, b.y - crossSize, b.x, b.y + crossSize, blueprintVectorPaint)
+
+                        // HUD Ball (Testo flottante con coordinate e angolo)
+                        val txtX = b.x + 15f
+                        val txtY = b.y - 15f
+                        val lineH = blueprintTextPaint.textSize
+                        val angleDeg = ((b.direction * 180) / Math.PI).toInt()
+                        canvas.drawText(String.format("X:%03d Y:%03d", b.x.toInt(), b.y.toInt()), txtX, txtY, blueprintTextPaint)
+                        canvas.drawText(String.format("ANG:%03d°", angleDeg), txtX, txtY + lineH, blueprintTextPaint)
+                    }
                     isClassic || isMatrix -> canvas.drawRect(b.x - 8, b.y - 8, b.x + 8, b.y + 8, panelPaint)
                     else -> canvas.drawCircle(b.x, b.y, 12f, panelPaint)
                 }
@@ -833,7 +965,6 @@ class PongTimeView @JvmOverloads constructor(
             }
         }
 
-        // Modificata per supportare l'aberrazione cromatica
         private fun drawNum(canvas: Canvas, x: Int, n: Int, isGlitchSpike: Boolean = false) {
             canvas.withSave {
                 val numHeight = LH * numberScale
@@ -907,12 +1038,13 @@ class PongTimeView @JvmOverloads constructor(
         val isFuturistic = SharedPreferencesManager.futuristic == 1
         val isGlitch = SharedPreferencesManager.glitch == 1
         val isNoGravity = SharedPreferencesManager.noGravity == 1
+        val isBlueprint = SharedPreferencesManager.bluePrint == 1
 
         val isClassic = SharedPreferencesManager.classic == 1 || (!isMatrix &&
-                !isSeason && !isBreakout && !isFuturistic && !isGlitch && !isNoGravity)
+                !isSeason && !isBreakout && !isFuturistic && !isGlitch && !isNoGravity && !isBlueprint)
 
         var color = colorCompat(R.color.white)
-        if (isClassic) color = colorCompat(R.color.white)
+        if (isClassic || isBlueprint) color = colorCompat(R.color.white)
         else if (isMatrix) color = colorCompat(R.color.matrix)
         else if (isSeason) color = colorCompat(AppUtils.getSeason(calendar[Calendar.DAY_OF_YEAR]).toColor())
         else if (isFuturistic) color = colorCompat(R.color.modern_cyan)

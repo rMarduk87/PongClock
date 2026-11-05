@@ -30,4 +30,6 @@
     <string name="e_settings_t">Extra Settings</string>
     <string name="glitch_mode">Glitch Mode</string>
     <string name="no_gravity_mode">No Gravity/Space Mode</string>
+    <string name="blue_print_mode">Blueprint Mode</string>
+    <string name="pacman_mode">Pacman Mode</string>
 </resources>

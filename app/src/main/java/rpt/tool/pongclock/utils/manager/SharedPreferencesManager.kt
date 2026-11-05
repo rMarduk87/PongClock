@@ -43,4 +43,12 @@ object SharedPreferencesManager {
     var noGravity: Int
         get() = sharedPreferences.getInt(AppUtils.NO_GRAVITY_MODE, 0)
         set(value) = sharedPreferences.edit { putInt(AppUtils.NO_GRAVITY_MODE, value) }
+
+    var bluePrint: Int
+        get() = sharedPreferences.getInt(AppUtils.BLUE_PRINT_MODE, 0)
+        set(value) = sharedPreferences.edit { putInt(AppUtils.BLUE_PRINT_MODE, value) }
+
+    var pacManMode: Int
+        get() = sharedPreferences.getInt(AppUtils.PAC_MAN_MODE, 0)
+        set(value) = sharedPreferences.edit { putInt(AppUtils.PAC_MAN_MODE, value) }
 }

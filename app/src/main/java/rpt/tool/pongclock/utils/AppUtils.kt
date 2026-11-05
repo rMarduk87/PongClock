@@ -20,6 +20,8 @@ class AppUtils {
         const val FUTURISTIC_MODE : String = "futuristic_mode"
         const val GLITCH_MODE : String = "glitch_mode"
         const val NO_GRAVITY_MODE : String = "no_gravity_mode"
+        const val BLUE_PRINT_MODE : String = "blue_print_mode"
+        const val PAC_MAN_MODE : String = "pac_man_mode"
         const val DAY_SPRING_MIN = 80
         const val DAY_SPRING_MAX = 172
         const val DAY_SUMMER_MIN = DAY_SPRING_MAX

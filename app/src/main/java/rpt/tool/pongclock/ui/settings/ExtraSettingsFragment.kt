@@ -67,6 +67,30 @@ class ExtraSettingsFragment : BaseFragment<FragmentExtraSettingsBinding>(
             updateSwitches()
             applyTheme()
         }
+
+        binding.switchBluePrintMode.setOnCheckedChangeListener { _, isChecked ->
+            if (_binding == null) return@setOnCheckedChangeListener
+            if (isChecked) {
+                disableAll()
+                SharedPreferencesManager.bluePrint = 1
+            } else {
+                SharedPreferencesManager.bluePrint = 0
+            }
+            updateSwitches()
+            applyTheme()
+        }
+
+        binding.switchPacManMode.setOnCheckedChangeListener { _, isChecked ->
+            if (_binding == null) return@setOnCheckedChangeListener
+            if (isChecked) {
+                disableAll()
+                SharedPreferencesManager.pacManMode = 1
+            } else {
+                SharedPreferencesManager.pacManMode = 0
+            }
+            updateSwitches()
+            applyTheme()
+        }
     }
 
     private fun disableAll() {
@@ -77,12 +101,16 @@ class ExtraSettingsFragment : BaseFragment<FragmentExtraSettingsBinding>(
         SharedPreferencesManager.breakOut = 0
         SharedPreferencesManager.glitch = 0
         SharedPreferencesManager.noGravity = 0
+        SharedPreferencesManager.bluePrint = 0
+        SharedPreferencesManager.pacManMode = 0
     }
 
     private fun updateSwitches() {
         _binding?.let {
             it.switchGlitchMode.isChecked = SharedPreferencesManager.glitch == 1
             it.switchNoGravityMode.isChecked = SharedPreferencesManager.noGravity == 1
+            it.switchBluePrintMode.isChecked = SharedPreferencesManager.bluePrint == 1
+            it.switchPacManMode.isChecked = SharedPreferencesManager.pacManMode == 1
         }
     }
 
@@ -102,11 +130,12 @@ class ExtraSettingsFragment : BaseFragment<FragmentExtraSettingsBinding>(
             it.modeCard.setCardBackgroundColor(bgColor)
             it.modeCard.strokeColor = mainColor
 
-            val textViews = listOf(it.lblGlitch, it.lblNoGravity)
+            val textViews = listOf(it.lblGlitch, it.lblNoGravity, it.lblBluePrint, it.lblPacMan)
             textViews.forEach { tv -> tv.setTextColor(mainColor) }
 
             val switches = listOf(
-                it.switchGlitchMode, it.switchNoGravityMode
+                it.switchGlitchMode, it.switchNoGravityMode,
+                it.switchBluePrintMode, it.switchPacManMode
             )
 
             switches.forEach { sw ->
@@ -120,6 +149,8 @@ class ExtraSettingsFragment : BaseFragment<FragmentExtraSettingsBinding>(
         _binding?.let {
             it.switchGlitchMode.setOnCheckedChangeListener(null)
             it.switchNoGravityMode.setOnCheckedChangeListener(null)
+            it.switchBluePrintMode.setOnCheckedChangeListener(null)
+            it.switchPacManMode.setOnCheckedChangeListener(null)
         }
         super.onDestroyView()
     }

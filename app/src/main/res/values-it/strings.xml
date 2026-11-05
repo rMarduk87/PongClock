@@ -30,4 +30,6 @@
     <string name="e_settings_t">Impostazioni Extra</string>
     <string name="glitch_mode">Modalità Glitch</string>
     <string name="no_gravity_mode">Modalità No Gravità/Spazio</string>
+    <string name="blue_print_mode">Blueprint Mode</string>
+    <string name="pacman_mode">Pacman Mode</string>
 </resources>
