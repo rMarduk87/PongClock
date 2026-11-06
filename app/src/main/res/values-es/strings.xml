@@ -30,6 +30,15 @@
     <string name="e_settings_t">Ajustes adicionales</string>
     <string name="glitch_mode">Modo glitch</string>
     <string name="no_gravity_mode">Modo Sin Gravedad/Espacial</string>
-    <string name="blue_print_mode">Blueprint Mode</string>
-    <string name="pacman_mode">Pacman Mode</string>
+    <string name="blue_print_mode">Modo Plano</string>
+    <string name="pacman_mode">Modo Pac-Man</string>
+    <string name="pacman_clock_title">RELOJ PAC-MAN</string>
+    <string name="pacman_one_up">1UP</string>
+    <string name="pacman_high_score">RÉCORD</string>
+    <string name="blueprint_system_mode">SIS.MODO = DES // CAPA_DIAGNÓSTICO</string>
+    <string name="blueprint_project_scale">PROYECTO: PONG-CLOCK // ESCALA 1:1</string>
+    <string name="blueprint_engine_status">ITER_TRAY = 3 // MOTOR: ACTIVO</string>
+    <string name="blueprint_y_distance">DIST_Y: %1$03d</string>
+    <string name="blueprint_coordinates">X:%1$03d Y:%2$03d</string>
+    <string name="blueprint_angle">ÁNG:%1$03d°</string>
 </resources>

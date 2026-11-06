@@ -30,6 +30,15 @@
     <string name="e_settings_t">Impostazioni Extra</string>
     <string name="glitch_mode">Modalità Glitch</string>
     <string name="no_gravity_mode">Modalità No Gravità/Spazio</string>
-    <string name="blue_print_mode">Blueprint Mode</string>
-    <string name="pacman_mode">Pacman Mode</string>
+    <string name="blue_print_mode">Modalità BluePrint/Develpers</string>
+    <string name="pacman_mode">Modalità Pacman</string>
+    <string name="pacman_clock_title">OROLOGIO PAC-MAN</string>
+    <string name="pacman_one_up">1UP</string>
+    <string name="pacman_high_score">RECORD</string>
+    <string name="blueprint_system_mode">MOD.SIS = SVIL // SOVRAPPOSIZIONE_DIAGNOSTICA</string>
+    <string name="blueprint_project_scale">PROGETTO: PONG-CLOCK // SCALA 1:1</string>
+    <string name="blueprint_engine_status">ITER_TRAI = 3 // MOTORE: ATTIVO</string>
+    <string name="blueprint_y_distance">DIST_Y: %1$03d</string>
+    <string name="blueprint_coordinates">X:%1$03d Y:%2$03d</string>
+    <string name="blueprint_angle">ANG:%1$03d°</string>
 </resources>

@@ -5,6 +5,7 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import androidx.core.content.ContextCompat
 import java.util.*
 import kotlin.math.*
 import rpt.tool.pongclock.R
@@ -73,8 +74,8 @@ class BreakOutTimeView @JvmOverloads constructor(
             letterSpacing = 0.2f
         }
 
-        private var bgColor: Int = Color.BLACK
-        private var mainColor: Int = Color.WHITE
+        private var bgColor: Int = ContextCompat.getColor(context, R.color.black)
+        private var mainColor: Int = ContextCompat.getColor(context, R.color.white)
         private val calendar = Calendar.getInstance()
 
         init { 

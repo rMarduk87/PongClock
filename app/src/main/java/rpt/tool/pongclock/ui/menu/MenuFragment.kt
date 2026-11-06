@@ -37,9 +37,12 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
 
         binding.btnClock.setOnClickListener {
             val holiday = AppUtils.getHoliday(Calendar.getInstance())
-            
+
             val isBreakout = SharedPreferencesManager.breakOut == 1
-            val isExtra = SharedPreferencesManager.glitch == 1 || SharedPreferencesManager.noGravity == 1
+            val isExtra = SharedPreferencesManager.glitch == 1 ||
+                    SharedPreferencesManager.noGravity == 1
+
+            val isPacman = SharedPreferencesManager.pacManMode == 1
 
             val action = if (holiday != AppUtils.Companion.Holiday.None) {
                 MenuFragmentDirections.actionMenuFragmentToClockFragment()
@@ -47,7 +50,10 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
                 MenuFragmentDirections.actionMenuFragmentToBreakOutClockFragment()
             } else if (isExtra) {
                 MenuFragmentDirections.actionMenuFragmentToExtraModeClockFragment()
-            } else {
+            } else if(isPacman) {
+                MenuFragmentDirections.actionMenuFragmentToPacManClockFragment()
+            }
+            else{
                 MenuFragmentDirections.actionMenuFragmentToClockFragment()
             }
             safeNavController(R.id.main_activity_nav_host_fragment)
@@ -85,8 +91,10 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
         val isSeason = SharedPreferencesManager.season == 1
         val isBreakout = SharedPreferencesManager.breakOut == 1
         val isFuturistic = SharedPreferencesManager.futuristic == 1
+        val isPacman = SharedPreferencesManager.pacManMode == 1
 
-        val isClassic = SharedPreferencesManager.classic == 1 || (!isMatrix && !isSeason && !isBreakout && !isFuturistic)
+        val isClassic = SharedPreferencesManager.classic == 1 ||
+                (!isMatrix && !isSeason && !isBreakout && !isFuturistic && !isPacman)
 
         val white = context.getColor(R.color.white)
 
@@ -95,6 +103,22 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
         when {
             holiday != AppUtils.Companion.Holiday.None -> {
                 applyHolidayTheme(holiday)
+            }
+            isPacman -> {
+                val pacmanYellow = context.getColor(R.color.pacman_yellow)
+                val ghostRed = context.getColor(R.color.red)
+
+                binding.root.setBackgroundColor(context.getColor(R.color.black))
+                binding.title.setTextColor(pacmanYellow)
+                binding.title.typeface = Typeface.MONOSPACE
+                binding.title.setText(R.string.pacman_clock_title)
+                binding.title.setShadowLayer(5f, 2f, 2f, ghostRed)
+
+                // NOTA: Se hai creato una PacmanEffectView per il menu, puoi aggiungerla qui
+                // binding.fxContainer.addView(PacmanEffectView(context))
+
+                styleButton(binding.btnClock, pacmanYellow, true, cornerRadius = 0)
+                styleButton(binding.btnSettings, ghostRed, true, cornerRadius = 0)
             }
             isClassic -> {
                 binding.root.setBackgroundColor(context.getColor(R.color.classic_bg))
@@ -278,8 +302,10 @@ class MenuFragment : BaseFragment<FragmentMenuBinding>(FragmentMenuBinding::infl
     }
 
     private fun isDarkColor(color: Int): Boolean {
-        val darkness = 1 - (0.299 * android.graphics.Color.red(color) + 0.587 * android.graphics.Color.green(color) + 0.114 *
-                android.graphics.Color.blue(color)) / 255
+        val darkness = 1 - (
+                0.299 * android.graphics.Color.red(color) +
+                        0.587 * android.graphics.Color.green(color) +
+                        0.114 * android.graphics.Color.blue(color)) / 255
         return darkness >= 0.5
     }
 

@@ -32,4 +32,13 @@
     <string name="no_gravity_mode">無重力／宇宙モード</string>
     <string name="blue_print_mode">Blueprint Mode</string>
     <string name="pacman_mode">Pacman Mode</string>
+    <string name="pacman_clock_title">パックマン時計</string>
+    <string name="pacman_one_up">1UP</string>
+    <string name="pacman_high_score">ハイスコア</string>
+    <string name="blueprint_system_mode">システム.モード = 開発 // 診断オーバーレイ</string>
+    <string name="blueprint_project_scale">プロジェクト: PONG-CLOCK // 縮尺 1:1</string>
+    <string name="blueprint_engine_status">軌道反復 = 3 // エンジン: 稼働中</string>
+    <string name="blueprint_y_distance">Y距離: %1$03d</string>
+    <string name="blueprint_coordinates">X:%1$03d Y:%2$03d</string>
+    <string name="blueprint_angle">角度:%1$03d°</string>
 </resources>

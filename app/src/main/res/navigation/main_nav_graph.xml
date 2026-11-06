@@ -20,6 +20,9 @@
         <action
             android:id="@+id/action_menuFragment_to_settingsFragment"
             app:destination="@id/settingsFragment" />
+        <action
+            android:id="@+id/action_menuFragment_to_pacManClockFragment"
+            app:destination="@id/pacManClockFragment" />
     </fragment>
 
     <fragment
@@ -68,4 +71,9 @@
         android:id="@+id/extraModeClockFragment"
         android:name="rpt.tool.pongclock.ui.extra.ExtraModeClockFragment"
         android:label="ExtraModeClockFragment" />
+
+    <fragment
+        android:id="@+id/pacManClockFragment"
+        android:name="rpt.tool.pongclock.ui.pacman.PacmanClockFragment"
+        android:label="PacmanClockFragment" />
 </navigation>

@@ -32,4 +32,13 @@
     <string name="no_gravity_mode">No Gravity/Space Mode</string>
     <string name="blue_print_mode">Blueprint Mode</string>
     <string name="pacman_mode">Pacman Mode</string>
+    <string name="pacman_clock_title">PAC-MAN CLOCK</string>
+    <string name="pacman_one_up">1UP</string>
+    <string name="pacman_high_score">HIGH SCORE</string>
+    <string name="blueprint_system_mode">SYS.MODE = DEV // DIAGNOSTIC_OVERLAY</string>
+    <string name="blueprint_project_scale">PROJECT: PONG-CLOCK // SCALE 1:1</string>
+    <string name="blueprint_engine_status">TRJ_ITER = 3 // ENGINE: ACTIVE</string>
+    <string name="blueprint_y_distance">Y_DIST: %1$03d</string>
+    <string name="blueprint_coordinates">X:%1$03d Y:%2$03d</string>
+    <string name="blueprint_angle">ANG:%1$03d°</string>
 </resources>

@@ -51,8 +51,8 @@
                       <LayoutPositions>
                         <option name="myPosition">
                           <Point>
-                            <option name="x" value="16" />
-                            <option name="y" value="-221" />
+                            <option name="x" value="-22" />
+                            <option name="y" value="-513" />
                           </Point>
                         </option>
                       </LayoutPositions>
@@ -63,8 +63,8 @@
                       <LayoutPositions>
                         <option name="myPosition">
                           <Point>
-                            <option name="x" value="447" />
-                            <option name="y" value="17" />
+                            <option name="x" value="505" />
+                            <option name="y" value="-301" />
                           </Point>
                         </option>
                         <option name="myPositions">
@@ -100,6 +100,11 @@
                                 <LayoutPositions />
                               </value>
                             </entry>
+                            <entry key="action_menuFragment_to_extraModeClockFragment">
+                              <value>
+                                <LayoutPositions />
+                              </value>
+                            </entry>
                             <entry key="action_menuFragment_to_settingsFragment">
                               <value>
                                 <LayoutPositions />
@@ -115,13 +120,18 @@
                       <LayoutPositions>
                         <option name="myPosition">
                           <Point>
-                            <option name="x" value="291" />
-                            <option name="y" value="297" />
+                            <option name="x" value="225" />
+                            <option name="y" value="513" />
                           </Point>
                         </option>
                         <option name="myPositions">
                           <map>
                             <entry key="action_settingsFragment_to_extraSettingsFragment">
+                              <value>
+                                <LayoutPositions />
+                              </value>
+                            </entry>
+                            <entry key="action_settingsFragment_to_menuFragment">
                               <value>
                                 <LayoutPositions />
                               </value>

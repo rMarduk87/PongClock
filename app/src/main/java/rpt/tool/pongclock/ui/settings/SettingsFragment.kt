@@ -122,6 +122,8 @@ class SettingsFragment :
         SharedPreferencesManager.breakOut = 0
         SharedPreferencesManager.glitch = 0
         SharedPreferencesManager.noGravity = 0
+        SharedPreferencesManager.bluePrint = 0
+        SharedPreferencesManager.pacManMode = 0
     }
 
     private fun updateSwitches() {

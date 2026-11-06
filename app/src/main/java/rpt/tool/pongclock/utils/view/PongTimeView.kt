@@ -127,33 +127,33 @@ class PongTimeView @JvmOverloads constructor(
         private val particlePaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
         private val scanlinePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.argb(60, 0, 0, 0)
+            color = colorCompat(R.color.scanline)
             strokeWidth = 4f
         }
         private val ghostPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { alpha = 100 }
 
         // Elementi Blueprint
         private val blueprintGridPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.argb(40, 255, 255, 255)
+            color = colorCompat(R.color.blueprint_grid)
             strokeWidth = 1f
         }
         private val blueprintGridMajorPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.argb(80, 255, 255, 255)
+            color = colorCompat(R.color.blueprint_grid_major)
             strokeWidth = 2f
         }
         private val blueprintVectorPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.argb(200, 0, 255, 255)
+            color = colorCompat(R.color.blueprint_vector)
             style = Paint.Style.STROKE
             strokeWidth = 2f
         }
         private val blueprintPredictionPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.argb(150, 255, 255, 255)
+            color = colorCompat(R.color.blueprint_prediction)
             style = Paint.Style.STROKE
             strokeWidth = 2f
             pathEffect = DashPathEffect(floatArrayOf(15f, 15f), 0f)
         }
         private val blueprintTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.argb(200, 255, 255, 255)
+            color = colorCompat(R.color.blueprint_text)
             typeface = Typeface.MONOSPACE
             textSize = 24f
         }
@@ -161,14 +161,14 @@ class PongTimeView @JvmOverloads constructor(
 
         // Elementi Glitch Pre-Allocati
         private val glitchCyanPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.CYAN
+            color = colorCompat(R.color.cyan)
             style = Paint.Style.STROKE
             strokeWidth = LINE_WIDTH.toFloat()
             strokeCap = Paint.Cap.SQUARE
             alpha = 150
         }
         private val glitchMagentaPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.MAGENTA
+            color = colorCompat(R.color.magenta)
             style = Paint.Style.STROKE
             strokeWidth = LINE_WIDTH.toFloat()
             strokeCap = Paint.Cap.SQUARE
@@ -179,29 +179,29 @@ class PongTimeView @JvmOverloads constructor(
         }
 
         // Elementi Buco Nero Pre-Allocati
-        private val starPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE }
+        private val starPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = colorCompat(R.color.white) }
         private val planetPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = 3f }
         private val haloPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
         private val diskPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = 14f; alpha = 180 }
-        private val corePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = Color.BLACK }
-        private val photonRingPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = 2f; color = Color.WHITE; alpha = 150 }
+        private val corePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = colorCompat(R.color.black) }
+        private val photonRingPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = 2f; color = colorCompat(R.color.photon_ring) }
 
         private val planetRingRect = RectF()
         private val diskRect = RectF()
 
         // Colori Cacheati
-        private var bgColor = Color.BLACK
-        private var mainColor = Color.WHITE
-        private var cWhite = Color.WHITE
-        private var cMatrix = Color.GREEN
-        private var cNeonPink = Color.MAGENTA
-        private var cModernCyan = Color.CYAN
-        private var cBrickBlue = Color.BLUE
-        private var cBrickRed = Color.RED
-        private var cAcidPurple = Color.MAGENTA
-        private var cBlackHoleCyan = Color.CYAN
-        private var cNewYearGold = Color.YELLOW
+        private var bgColor = colorCompat(R.color.black)
+        private var mainColor = colorCompat(R.color.white)
+        private var cWhite = colorCompat(R.color.white)
+        private var cMatrix = colorCompat(R.color.green)
+        private var cNeonPink = colorCompat(R.color.magenta)
+        private var cModernCyan = colorCompat(R.color.cyan)
+        private var cBrickBlue = colorCompat(R.color.blue)
+        private var cBrickRed = colorCompat(R.color.red)
+        private var cAcidPurple = colorCompat(R.color.magenta)
+        private var cBlackHoleCyan = colorCompat(R.color.cyan)
+        private var cNewYearGold = colorCompat(R.color.yellow)
         private val cBrickColors = IntArray(5)
 
         private val matrixChars = arrayOf("0", "1")
@@ -327,8 +327,8 @@ class PongTimeView @JvmOverloads constructor(
             }
 
             if (isBlueprint) {
-                bgColor = Color.parseColor("#0A2342") // Blueprint Blue
-                mainColor = Color.WHITE
+                bgColor = colorCompat(R.color.blueprint_background)
+                mainColor = colorCompat(R.color.white)
                 linePaint.color = mainColor
                 linePaint.strokeWidth = 2f
                 panelPaint.color = mainColor
@@ -382,7 +382,12 @@ class PongTimeView @JvmOverloads constructor(
             }
 
             planets.clear()
-            val pColors = intArrayOf(Color.parseColor("#E08E36"), Color.parseColor("#4285F4"), Color.parseColor("#9C27B0"), Color.parseColor("#00BCD4"))
+            val pColors = intArrayOf(
+                colorCompat(R.color.planet_orange),
+                colorCompat(R.color.planet_blue),
+                colorCompat(R.color.planet_purple),
+                colorCompat(R.color.planet_cyan)
+            )
             for(i in 0 until 4) {
                 planets.add(Planet(
                     Random.nextFloat() * w,
@@ -399,7 +404,7 @@ class PongTimeView @JvmOverloads constructor(
             val bhRadius = 45f
             haloPaint.shader = RadialGradient(
                 cx, cy, bhRadius * 2.8f,
-                intArrayOf(Color.TRANSPARENT, cAcidPurple, cBlackHoleCyan, Color.TRANSPARENT),
+                intArrayOf(colorCompat(R.color.transparent), cAcidPurple, cBlackHoleCyan, colorCompat(R.color.transparent)),
                 floatArrayOf(0f, 0.4f, 0.7f, 1f),
                 Shader.TileMode.CLAMP
             )
@@ -594,7 +599,7 @@ class PongTimeView @JvmOverloads constructor(
             if (isGlitch) {
                 glitchTimer = Random.nextInt(8, 16)
                 for (i in 0..8) {
-                    particles.add(FxParticle(x, y, (Random.nextFloat() - 0.5f) * 16f, (Random.nextFloat() - 0.5f) * 6f, 1f, 1f, 5, "", if(Random.nextBoolean()) Color.CYAN else Color.MAGENTA))
+                    particles.add(FxParticle(x, y, (Random.nextFloat() - 0.5f) * 16f, (Random.nextFloat() - 0.5f) * 6f, 1f, 1f, 5, "", if(Random.nextBoolean()) colorCompat(R.color.cyan) else colorCompat(R.color.magenta)))
                 }
             }
             if (holiday.toString().contains("NewYear")) {
@@ -676,7 +681,7 @@ class PongTimeView @JvmOverloads constructor(
             try {
                 if (isNoGravity) {
                     // (Codice draw NoGravity non modificato...)
-                    canvas.drawColor(Color.BLACK)
+                    canvas.drawColor(colorCompat(R.color.black))
                     stars.forEach { s ->
                         starPaint.alpha = s.alpha
                         canvas.drawCircle(s.x, s.y, s.size, starPaint)
@@ -685,12 +690,12 @@ class PongTimeView @JvmOverloads constructor(
                     planets.forEach { p ->
                         planetPaint.color = p.color
                         canvas.drawCircle(p.x, p.y, p.size, planetPaint)
-                        planetPaint.color = Color.argb(100, 0, 0, 0)
+                        planetPaint.color = colorCompat(R.color.planet_shadow)
                         planetRingRect.set(p.x - p.size, p.y - p.size, p.x + p.size, p.y + p.size)
                         canvas.drawArc(planetRingRect, 90f, 180f, false, planetPaint)
 
                         if (p.hasRing) {
-                            ringPaint.color = Color.argb(150, 200, 200, 200)
+                            ringPaint.color = colorCompat(R.color.planet_ring)
                             planetRingRect.set(p.x - p.size * 1.8f, p.y - p.size * 0.4f, p.x + p.size * 1.8f, p.y + p.size * 0.4f)
                             canvas.drawOval(planetRingRect, ringPaint)
                         }
@@ -705,7 +710,7 @@ class PongTimeView @JvmOverloads constructor(
                     diskPaint.alpha = 180
                     canvas.drawOval(diskRect, diskPaint)
                     diskPaint.strokeWidth = 4f
-                    diskPaint.color = Color.WHITE
+                    diskPaint.color = colorCompat(R.color.white)
                     canvas.drawOval(diskRect, diskPaint)
                     canvas.drawCircle(cx, cy, bhRadius, corePaint)
                     canvas.drawCircle(cx, cy, bhRadius, photonRingPaint)
@@ -727,12 +732,12 @@ class PongTimeView @JvmOverloads constructor(
                 }
 
                 if (isGlitch) {
-                    glitchBlockPaint.color = Color.argb(20, 255, 255, 255)
+                    glitchBlockPaint.color = colorCompat(R.color.glitch_block)
                     canvas.drawRect(0f, crtBarY, canvasWidth.toFloat(), crtBarY + 40f, glitchBlockPaint)
                     if (isGlitchSpike) {
                         val blockCount = Random.nextInt(3, 8)
                         for (i in 0 until blockCount) {
-                            glitchBlockPaint.color = if (Random.nextBoolean()) Color.CYAN else Color.MAGENTA
+                            glitchBlockPaint.color = if (Random.nextBoolean()) colorCompat(R.color.cyan) else colorCompat(R.color.magenta)
                             glitchBlockPaint.alpha = Random.nextInt(40, 100)
                             val rx = Random.nextFloat() * canvasWidth
                             val ry = Random.nextFloat() * canvasHeight
@@ -807,10 +812,10 @@ class PongTimeView @JvmOverloads constructor(
                 if (isBlueprint) {
                     // Cartigli / Technical Overlay negli angoli
                     val padding = 30f
-                    canvas.drawText("SYS.MODE = DEV // DIAGNOSTIC_OVERLAY", padding, padding + blueprintTextPaint.textSize, blueprintTextPaint)
-                    canvas.drawText("PROJECT: PONG-CLOCK // SCALE 1:1", padding, canvasHeight - padding, blueprintTextPaint)
+                    canvas.drawText(context.getString(R.string.blueprint_system_mode), padding, padding + blueprintTextPaint.textSize, blueprintTextPaint)
+                    canvas.drawText(context.getString(R.string.blueprint_project_scale), padding, canvasHeight - padding, blueprintTextPaint)
 
-                    val rightAlignText = "TRJ_ITER = 3 // ENGINE: ACTIVE"
+                    val rightAlignText = context.getString(R.string.blueprint_engine_status)
                     val textWidth = blueprintTextPaint.measureText(rightAlignText)
                     canvas.drawText(rightAlignText, canvasWidth - textWidth - padding, canvasHeight - padding, blueprintTextPaint)
 
@@ -819,7 +824,7 @@ class PongTimeView @JvmOverloads constructor(
                     canvas.drawLine(rp.x.toFloat(), 0f, rp.x.toFloat(), canvasHeight.toFloat(), blueprintGridPaint)
 
                     // Telemetria (HUD) ancorata alla racchetta sinistra (Player 1/AI)
-                    canvas.drawText(String.format("Y_DIST: %03d", abs(canvasHeight2 - lp.y)), lp.x + 15f, lp.y.toFloat(), blueprintTextPaint)
+                    canvas.drawText(context.getString(R.string.blueprint_y_distance, abs(canvasHeight2 - lp.y)), lp.x + 15f, lp.y.toFloat(), blueprintTextPaint)
 
                     // CPU Trajectory Raycasting (Predizione 3 Rimbalzi)
                     var pX = b.x
@@ -932,8 +937,8 @@ class PongTimeView @JvmOverloads constructor(
                         val txtY = b.y - 15f
                         val lineH = blueprintTextPaint.textSize
                         val angleDeg = ((b.direction * 180) / Math.PI).toInt()
-                        canvas.drawText(String.format("X:%03d Y:%03d", b.x.toInt(), b.y.toInt()), txtX, txtY, blueprintTextPaint)
-                        canvas.drawText(String.format("ANG:%03d°", angleDeg), txtX, txtY + lineH, blueprintTextPaint)
+                        canvas.drawText(context.getString(R.string.blueprint_coordinates, b.x.toInt(), b.y.toInt()), txtX, txtY, blueprintTextPaint)
+                        canvas.drawText(context.getString(R.string.blueprint_angle, angleDeg), txtX, txtY + lineH, blueprintTextPaint)
                     }
                     isClassic || isMatrix -> canvas.drawRect(b.x - 8, b.y - 8, b.x + 8, b.y + 8, panelPaint)
                     else -> canvas.drawCircle(b.x, b.y, 12f, panelPaint)

@@ -75,4 +75,35 @@
     <color name="festive_overlay">#5000FF00</color>
     <color name="matrix_dim_bg">#28000000</color>
     <color name="transparent">#00000000</color>
+
+    <!-- Pong clock effects -->
+    <color name="scanline">#3C000000</color>
+    <color name="blueprint_grid">#28FFFFFF</color>
+    <color name="blueprint_grid_major">#50FFFFFF</color>
+    <color name="blueprint_vector">#C800FFFF</color>
+    <color name="blueprint_prediction">#96FFFFFF</color>
+    <color name="blueprint_text">#C8FFFFFF</color>
+    <color name="blueprint_background">#0A2342</color>
+    <color name="planet_shadow">#64000000</color>
+    <color name="planet_ring">#96C8C8C8</color>
+    <color name="glitch_block">#14FFFFFF</color>
+    <color name="photon_ring">#96FFFFFF</color>
+    <color name="planet_orange">#E08E36</color>
+    <color name="planet_blue">#4285F4</color>
+    <color name="planet_purple">#9C27B0</color>
+    <color name="planet_cyan">#00BCD4</color>
+
+    <!-- Pac-Man clock -->
+    <color name="pacman_yellow">#FDFF00</color>
+    <color name="pacman_pink">#FFB8FF</color>
+    <color name="pacman_orange">#FFB852</color>
+    <color name="pacman_maze">#1919A6</color>
+    <color name="pacman_pellet">#FFB8AE</color>
+    <color name="pacman_scared">#2121DE</color>
+    <color name="pacman_stem">#FF9900</color>
+
+    <!-- Launcher artwork -->
+    <color name="launcher_background">#3DDC84</color>
+    <color name="launcher_grid">#33FFFFFF</color>
+    <color name="launcher_shadow">#44000000</color>
 </resources>
