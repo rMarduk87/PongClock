@@ -12,6 +12,7 @@ import rpt.com.base.navigation.safeNavController
 import rpt.tool.pongclock.R
 import rpt.tool.pongclock.databinding.FragmentSettingsBinding
 import rpt.tool.pongclock.utils.AppUtils
+import rpt.tool.pongclock.utils.helpers.FeedbackDialogHelper
 import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
 import kotlin.math.max
 
@@ -37,6 +38,16 @@ class SettingsFragment :
         binding.toolbar.setNavigationOnClickListener {
             safeNavController(R.id.main_activity_nav_host_fragment)?.
             navigate(SettingsFragmentDirections.actionSettingsFragmentToMenuFragment())
+        }
+
+        binding.toolbar.inflateMenu(R.menu.menu_settings_topbar)
+        binding.toolbar.setOnMenuItemClickListener { menuItem ->
+            if (menuItem.itemId == R.id.action_send_email) {
+                FeedbackDialogHelper.showFeedbackDialog(requireContext())
+                true
+            } else {
+                false
+            }
         }
 
         updateSwitches()
@@ -148,6 +159,7 @@ class SettingsFragment :
             it.toolbar.setBackgroundColor(bgColor)
             it.toolbar.setTitleTextColor(mainColor)
             it.toolbar.navigationIcon?.setTint(mainColor)
+            it.toolbar.menu.findItem(R.id.action_send_email)?.icon?.setTint(mainColor)
 
             it.modeCard.setCardBackgroundColor(bgColor)
             it.modeCard.strokeColor = mainColor

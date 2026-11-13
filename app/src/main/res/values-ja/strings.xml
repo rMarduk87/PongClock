@@ -41,4 +41,14 @@
     <string name="blueprint_y_distance">Y距離: %1$03d</string>
     <string name="blueprint_coordinates">X:%1$03d Y:%2$03d</string>
     <string name="blueprint_angle">角度:%1$03d°</string>
+    <string name="feedback_menu_title">改善点や新機能の提案</string>
+    <string name="feedback_title">フィードバック送信</string>
+    <string name="feedback_subtitle">PongClockの改善点や新機能を提案してください</string>
+    <string name="feedback_subject_hint">件名</string>
+    <string name="feedback_message_hint">アイデアや提案内容を記入してください…</string>
+    <string name="feedback_cancel">キャンセル</string>
+    <string name="feedback_send">メール送信</string>
+    <string name="feedback_email_subject_default">[PongClock] 機能提案 / フィードバック</string>
+    <string name="feedback_no_email_app">メールアプリが見つかりません</string>
+    <string name="email">riccardo.pezzolati@gmail.com</string>
 </resources>

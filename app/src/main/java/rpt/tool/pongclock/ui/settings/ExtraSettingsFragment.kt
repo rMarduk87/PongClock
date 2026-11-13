@@ -3,16 +3,15 @@ package rpt.tool.pongclock.ui.settings
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
-import android.widget.TextView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.android.material.snackbar.Snackbar
 import rpt.com.base.BaseFragment
 import rpt.com.base.navigation.safeNavController
 import rpt.com.base.navigation.safeNavigate
 import rpt.tool.pongclock.R
 import rpt.tool.pongclock.databinding.FragmentExtraSettingsBinding
 import rpt.tool.pongclock.utils.AppUtils
+import rpt.tool.pongclock.utils.helpers.FeedbackDialogHelper
 import rpt.tool.pongclock.utils.manager.SharedPreferencesManager
 import kotlin.math.max
 
@@ -39,6 +38,16 @@ class ExtraSettingsFragment : BaseFragment<FragmentExtraSettingsBinding>(
             safeNavController(R.id.main_activity_nav_host_fragment)?.safeNavigate(
                 ExtraSettingsFragmentDirections.actionExtraSettingsFragmentToSettingsFragment()
             )
+        }
+
+        binding.toolbar.inflateMenu(R.menu.menu_settings_topbar)
+        binding.toolbar.setOnMenuItemClickListener { menuItem ->
+            if (menuItem.itemId == R.id.action_send_email) {
+                FeedbackDialogHelper.showFeedbackDialog(requireContext())
+                true
+            } else {
+                false
+            }
         }
 
         updateSwitches()
@@ -126,6 +135,7 @@ class ExtraSettingsFragment : BaseFragment<FragmentExtraSettingsBinding>(
             it.toolbar.setBackgroundColor(bgColor)
             it.toolbar.setTitleTextColor(mainColor)
             it.toolbar.navigationIcon?.setTint(mainColor)
+            it.toolbar.menu.findItem(R.id.action_send_email)?.icon?.setTint(mainColor)
 
             it.modeCard.setCardBackgroundColor(bgColor)
             it.modeCard.strokeColor = mainColor

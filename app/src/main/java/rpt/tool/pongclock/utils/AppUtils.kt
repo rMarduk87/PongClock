@@ -88,6 +88,10 @@ class AppUtils {
             val isSeason = SharedPreferencesManager.season == 1
             val isBreakout = SharedPreferencesManager.breakOut == 1
             val isFuturistic = SharedPreferencesManager.futuristic == 1
+            val isGlitch = SharedPreferencesManager.glitch == 1
+            val isNoGravity = SharedPreferencesManager.noGravity == 1
+            val isBlueprint = SharedPreferencesManager.bluePrint == 1
+            val isPacman = SharedPreferencesManager.pacManMode == 1
 
             var mainColor = ctx.getColor(rpt.tool.pongclock.R.color.white)
             var bgColor = ctx.getColor(rpt.tool.pongclock.R.color.black)
@@ -112,7 +116,19 @@ class AppUtils {
                     }
                 }
             } else {
-                if (isMatrix) {
+                if (isGlitch) {
+                    mainColor = ctx.getColor(rpt.tool.pongclock.R.color.cyberpunk_green)
+                    bgColor = ctx.getColor(rpt.tool.pongclock.R.color.glitch_bg)
+                } else if (isNoGravity) {
+                    mainColor = ctx.getColor(rpt.tool.pongclock.R.color.black_hole_cyan)
+                    bgColor = ctx.getColor(rpt.tool.pongclock.R.color.black)
+                } else if (isBlueprint) {
+                    mainColor = ctx.getColor(rpt.tool.pongclock.R.color.white)
+                    bgColor = ctx.getColor(rpt.tool.pongclock.R.color.blueprint_background)
+                } else if (isPacman) {
+                    mainColor = ctx.getColor(rpt.tool.pongclock.R.color.pacman_yellow)
+                    bgColor = ctx.getColor(rpt.tool.pongclock.R.color.black)
+                } else if (isMatrix) {
                     mainColor = ctx.getColor(rpt.tool.pongclock.R.color.matrix)
                     bgColor = ctx.getColor(rpt.tool.pongclock.R.color.black)
                 } else if (isSeason) {

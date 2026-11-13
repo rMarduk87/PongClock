@@ -41,4 +41,14 @@
     <string name="blueprint_y_distance">DIST_Y: %1$03d</string>
     <string name="blueprint_coordinates">X:%1$03d Y:%2$03d</string>
     <string name="blueprint_angle">ÁNG:%1$03d°</string>
+    <string name="feedback_menu_title">Sugerir mejoras o nuevas funciones</string>
+    <string name="feedback_title">Enviar comentarios</string>
+    <string name="feedback_subtitle">Sugiere mejoras o nuevas funciones para PongClock</string>
+    <string name="feedback_subject_hint">Asunto</string>
+    <string name="feedback_message_hint">Describe tu idea o sugerencia…</string>
+    <string name="feedback_cancel">Cancelar</string>
+    <string name="feedback_send">Enviar correo</string>
+    <string name="feedback_email_subject_default">[PongClock] Sugerencia / Comentarios</string>
+    <string name="feedback_no_email_app">No se encontró ninguna aplicación de correo en el dispositivo</string>
+    <string name="email">riccardo.pezzolati@gmail.com</string>
 </resources>
